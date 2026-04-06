@@ -1,0 +1,13 @@
+{
+  "name": "ai-demo-proxy",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "leads": "echo 'Usage: curl https://YOUR_WORKER.workers.dev/leads?key=YOUR_ADMIN_KEY'"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}

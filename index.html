@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agent Demo – Aytekin Uysal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Instrument+Serif&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #08090a;
+    --surface: #111214;
+    --surface-2: #191a1d;
+    --surface-3: #212225;
+    --border: #2a2b2f;
+    --border-active: #3b82f6;
+    --text: #e8e8ec;
+    --text-muted: #7c7c86;
+    --text-dim: #55555e;
+    --accent: #3b82f6;
+    --accent-soft: rgba(59,130,246,0.12);
+    --accent-glow: rgba(59,130,246,0.06);
+    --green: #22c55e;
+    --green-soft: rgba(34,197,94,0.12);
+    --amber: #f59e0b;
+    --amber-soft: rgba(245,158,11,0.12);
+    --red: #ef4444;
+    --red-soft: rgba(239,68,68,0.12);
+    --purple: #a855f7;
+    --purple-soft: rgba(168,85,247,0.12);
+    --user-bg: #1e293b;
+    --agent-bg: var(--surface-2);
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+    --serif: 'Instrument Serif', serif;
+    --radius: 14px;
+    --heading-font: var(--serif);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition: background 0.4s, color 0.4s;
+  }
+
+  body::after {
+    content:'';position:fixed;inset:0;opacity:0.025;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    pointer-events:none;z-index:9999;
+  }
+
+  .page-container { max-width:1400px; margin:0 auto; padding:0 24px; }
+
+  /* ─── TOP BAR ─── */
+  .top-bar {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 0; border-bottom:1px solid var(--border);
+    margin-bottom:0; flex-wrap:wrap; gap:10px;
+  }
+
+  .top-bar-left { display:flex; align-items:center; gap:12px; }
+
+  .top-logo {
+    font-family:var(--mono); font-size:12px; font-weight:600;
+    color:var(--accent); letter-spacing:1px;
+  }
+
+  .top-bar-right { display:flex; align-items:center; gap:8px; }
+
+  .theme-switcher, .lang-toggle {
+    display:flex; background:var(--surface); border:1px solid var(--border);
+    border-radius:8px; overflow:hidden;
+  }
+
+  .theme-btn, .lang-btn {
+    padding:6px 12px; font-size:10px; font-family:var(--mono);
+    background:transparent; border:none; color:var(--text-dim);
+    cursor:pointer; transition:all 0.2s; white-space:nowrap;
+  }
+
+  .theme-btn.active, .lang-btn.active {
+    background:var(--accent-soft); color:var(--accent);
+  }
+
+  .theme-btn:hover:not(.active), .lang-btn:hover:not(.active) { color:var(--text-muted); }
+
+  /* ─── HERO ─── */
+  .hero {
+    padding:40px 0 28px; text-align:center; position:relative;
+  }
+
+  .hero::before {
+    content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);
+    width:700px;height:350px;
+    background:radial-gradient(ellipse,var(--accent-glow) 0%,transparent 70%);
+    pointer-events:none;
+  }
+
+  .hero-badge {
+    display:inline-flex;align-items:center;gap:8px;padding:6px 16px;
+    background:var(--accent-soft);border:1px solid rgba(59,130,246,0.2);
+    border-radius:100px;font-size:12px;color:var(--accent);font-family:var(--mono);
+    margin-bottom:18px;
+  }
+
+  .hero h1 {
+    font-family:var(--heading-font);font-size:46px;font-weight:400;
+    letter-spacing:-0.5px;margin-bottom:8px;
+  }
+
+  .hero p { font-size:14px; color:var(--text-muted); max-width:560px; margin:0 auto; }
+
+  /* ─── DEMO CONTROLS ─── */
+  .demo-controls {
+    margin:16px 0; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:12px 18px;
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+
+  .demo-status {
+    display:flex; align-items:center; gap:6px;
+    font-family:var(--mono); font-size:11px;
+  }
+
+  .status-dot {
+    width:7px;height:7px;border-radius:50%;
+    transition:background 0.3s;
+  }
+
+  .status-dot.active { background:var(--green); animation:pulse 2s infinite; }
+  .status-dot.paused { background:var(--amber); }
+  .status-dot.off { background:var(--red); }
+
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+
+  .demo-model {
+    font-family:var(--mono); font-size:10px; color:var(--text-dim);
+    padding:3px 8px; background:var(--surface-3); border-radius:5px;
+  }
+
+  .demo-rate {
+    font-family:var(--mono); font-size:10px; color:var(--text-muted);
+    margin-left:auto;
+  }
+
+  .demo-btn {
+    padding:5px 14px; border-radius:7px; font-size:11px; font-family:var(--mono);
+    border:1px solid var(--border); cursor:pointer; transition:all 0.2s;
+    background:var(--surface-3); color:var(--text-muted);
+  }
+
+  .demo-btn:hover { border-color:var(--accent); color:var(--text); }
+
+  .demo-btn.danger:hover { border-color:var(--red); color:var(--red); }
+
+  .demo-btn.primary {
+    background:var(--accent); color:#fff; border-color:var(--accent);
+  }
+
+  .demo-btn.primary:hover { background:#2563eb; }
+
+  .byok-link {
+    font-size:9px; color:var(--text-dim); cursor:pointer;
+    text-decoration:underline; font-family:var(--mono);
+  }
+
+  .byok-link:hover { color:var(--accent); }
+
+  .byok-area { display:none; width:100%; margin-top:8px; }
+  .byok-area.visible { display:flex; gap:8px; align-items:center; }
+
+  .byok-input {
+    flex:1; padding:7px 10px; background:var(--bg); border:1px solid var(--border);
+    border-radius:7px; color:var(--text); font-family:var(--mono); font-size:11px;
+    outline:none;
+  }
+
+  .byok-input:focus { border-color:var(--accent); }
+
+  /* ─── EMAIL GATE ─── */
+  .email-gate {
+    margin-bottom:16px; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:28px 32px; text-align:center;
+    position:relative; overflow:hidden;
+  }
+
+  .email-gate::before {
+    content:'';position:absolute;inset:0;
+    background:radial-gradient(ellipse at 50% 0%,var(--accent-glow) 0%,transparent 60%);
+    pointer-events:none;
+  }
+
+  .email-gate-icon { font-size:28px; margin-bottom:10px; }
+
+  .email-gate h3 {
+    font-size:16px; font-weight:600; margin-bottom:6px;
+  }
+
+  .email-gate p {
+    font-size:12px; color:var(--text-muted); max-width:400px; margin:0 auto 16px;
+  }
+
+  .email-gate-form {
+    display:flex; gap:8px; max-width:400px; margin:0 auto;
+    justify-content:center;
+  }
+
+  .email-gate-input {
+    flex:1; padding:9px 14px; background:var(--bg); border:1px solid var(--border);
+    border-radius:8px; color:var(--text); font-size:13px; outline:none;
+    font-family:var(--sans); transition:border-color 0.2s;
+  }
+
+  .email-gate-input:focus { border-color:var(--accent); }
+
+  .email-gate-btn {
+    padding:9px 20px; background:var(--accent); border:none; border-radius:8px;
+    color:#fff; font-size:12px; font-weight:600; cursor:pointer;
+    font-family:var(--sans); transition:background 0.2s; white-space:nowrap;
+  }
+
+  .email-gate-btn:hover { background:#2563eb; }
+
+  .email-gate-features {
+    display:flex; gap:16px; justify-content:center; margin-top:16px;
+    flex-wrap:wrap;
+  }
+
+  .gate-feature {
+    font-size:11px; color:var(--text-dim); font-family:var(--mono);
+    display:flex; align-items:center; gap:5px;
+  }
+
+  .gate-feature-dot {
+    width:5px;height:5px;border-radius:50%;
+  }
+
+  /* ─── MAIN LAYOUT ─── */
+  .demo-layout {
+    display:grid; grid-template-columns:260px 1fr 280px;
+    gap:16px; padding-bottom:24px; min-height:500px;
+  }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar { display:flex; flex-direction:column; gap:10px; }
+
+  .sidebar-label {
+    font-family:var(--mono); font-size:10px; text-transform:uppercase;
+    letter-spacing:2px; color:var(--text-dim); padding:0 4px; margin-top:4px;
+  }
+
+  .sidebar-label:first-child { margin-top:0; }
+
+  .scenario-card {
+    padding:13px; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); cursor:pointer; transition:all 0.25s;
+    position:relative; overflow:hidden;
+  }
+
+  .scenario-card::before {
+    content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+    background:transparent;transition:background 0.25s;
+  }
+
+  .scenario-card:hover { background:var(--surface-2); border-color:var(--border-active); transform:translateX(2px); }
+
+  .scenario-card.active {
+    background:var(--surface-2);border-color:var(--accent);
+    box-shadow:0 0 20px var(--accent-glow);
+  }
+
+  .scenario-card.active::before { background:var(--accent); }
+
+  .scenario-icon { font-size:18px; margin-bottom:5px; }
+  .scenario-card h3 { font-size:12px; font-weight:600; margin-bottom:2px; }
+  .scenario-card p { font-size:10px; color:var(--text-muted); line-height:1.5; }
+
+  .scenario-sources { display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; }
+
+  .source-tag {
+    font-size:9px; padding:2px 6px; border-radius:4px;
+    font-family:var(--mono); font-weight:500;
+  }
+
+  .custom-input-area { display:none; margin-top:8px; }
+  .custom-input-area.visible { display:block; }
+
+  .custom-textarea {
+    width:100%; padding:8px 10px; background:var(--bg);
+    border:1px solid var(--border); border-radius:7px;
+    color:var(--text); font-family:var(--sans); font-size:11px;
+    resize:vertical; min-height:55px; outline:none;
+  }
+
+  .custom-textarea:focus { border-color:var(--accent); }
+
+  .apply-btn {
+    margin-top:5px; width:100%; padding:6px; background:var(--accent);
+    border:none; border-radius:7px; color:#fff; font-size:11px;
+    font-weight:600; cursor:pointer;
+  }
+
+  .apply-btn:hover { background:#2563eb; }
+
+  /* ─── CHAT ─── */
+  .chat-container {
+    display:flex; flex-direction:column; background:var(--surface);
+    border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;
+  }
+
+  .chat-header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 16px; border-bottom:1px solid var(--border); background:var(--surface-2);
+  }
+
+  .chat-header-left { display:flex; align-items:center; gap:8px; }
+
+  .agent-avatar {
+    width:30px;height:30px;border-radius:9px;background:var(--accent-soft);
+    border:1px solid rgba(59,130,246,0.2);display:flex;align-items:center;
+    justify-content:center;font-size:14px;
+  }
+
+  .agent-info h4 { font-size:12px; font-weight:600; }
+  .agent-info span { font-size:10px; color:var(--green); font-family:var(--mono); }
+
+  .clear-btn {
+    padding:4px 10px; background:var(--surface-3); border:1px solid var(--border);
+    border-radius:7px; color:var(--text-muted); font-size:10px;
+    font-family:var(--mono); cursor:pointer;
+  }
+
+  .clear-btn:hover { color:var(--text); border-color:var(--red); }
+
+  .chat-messages {
+    flex:1; overflow-y:auto; padding:14px; min-height:340px; max-height:430px;
+    display:flex; flex-direction:column; gap:10px;
+  }
+
+  .chat-messages::-webkit-scrollbar { width:4px; }
+  .chat-messages::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+  .message {
+    max-width:85%; padding:10px 14px; border-radius:12px;
+    font-size:13px; line-height:1.6; animation:msgIn 0.3s ease; white-space:pre-wrap;
+  }
+
+  @keyframes msgIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+  .message.user { background:var(--user-bg); align-self:flex-end; border-bottom-right-radius:4px; }
+
+  .message.agent {
+    background:var(--agent-bg); border:1px solid var(--border);
+    align-self:flex-start; border-bottom-left-radius:4px;
+  }
+
+  .message.system {
+    background:var(--accent-soft); border:1px solid rgba(59,130,246,0.15);
+    align-self:center; text-align:center; font-size:11px; color:var(--accent);
+    font-family:var(--mono); max-width:90%; padding:6px 14px; border-radius:8px;
+  }
+
+  /* Source Badges (under agent messages) */
+  .source-badges {
+    align-self:flex-start; display:flex; gap:5px; flex-wrap:wrap;
+    animation:msgIn 0.3s ease; padding-left:4px;
+  }
+
+  .src-badge {
+    font-size:9px; font-family:var(--mono); font-weight:500;
+    padding:3px 8px; border-radius:5px; display:flex; align-items:center; gap:4px;
+    opacity:0; transform:scale(0.8); transition:all 0.3s ease;
+  }
+
+  .src-badge.visible { opacity:1; transform:scale(1); }
+
+  .src-kb { background:var(--green-soft); color:var(--green); }
+  .src-api { background:var(--amber-soft); color:var(--amber); }
+  .src-static { background:var(--red-soft); color:var(--red); }
+  .src-web { background:var(--purple-soft); color:var(--purple); }
+  .src-auth { background:var(--amber-soft); color:var(--amber); }
+
+  .typing-indicator {
+    display:flex; gap:5px; padding:10px 14px; background:var(--agent-bg);
+    border:1px solid var(--border); border-radius:12px;
+    border-bottom-left-radius:4px; align-self:flex-start; animation:msgIn 0.3s ease;
+  }
+
+  .typing-dot {
+    width:6px;height:6px;border-radius:50%;background:var(--text-dim);
+    animation:typingBounce 1.4s infinite;
+  }
+
+  .typing-dot:nth-child(2) { animation-delay:0.2s; }
+  .typing-dot:nth-child(3) { animation-delay:0.4s; }
+
+  @keyframes typingBounce {
+    0%,60%,100%{transform:translateY(0);opacity:0.4}
+    30%{transform:translateY(-5px);opacity:1}
+  }
+
+  .chat-input-area {
+    padding:12px 16px; border-top:1px solid var(--border);
+    background:var(--surface-2); display:flex; gap:8px; align-items:flex-end;
+  }
+
+  .chat-input {
+    flex:1; padding:9px 12px; background:var(--bg); border:1px solid var(--border);
+    border-radius:10px; color:var(--text); font-family:var(--sans); font-size:13px;
+    outline:none; resize:none; max-height:80px; min-height:38px; line-height:1.4;
+    transition:border-color 0.2s;
+  }
+
+  .chat-input:focus { border-color:var(--accent); }
+  .chat-input::placeholder { color:var(--text-dim); }
+  .chat-input:disabled { opacity:0.4; cursor:not-allowed; }
+
+  .send-btn {
+    width:38px;height:38px;border-radius:10px;background:var(--accent);
+    border:none;color:#fff;cursor:pointer;display:flex;align-items:center;
+    justify-content:center;transition:all 0.2s;flex-shrink:0;
+  }
+
+  .send-btn:hover { background:#2563eb; transform:scale(1.05); }
+  .send-btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+  .send-btn svg { width:15px; height:15px; }
+
+  /* ─── SECURITY PANEL ─── */
+  .security-panel { display:flex; flex-direction:column; gap:8px; }
+
+  .security-panel-label {
+    font-family:var(--mono); font-size:10px; text-transform:uppercase;
+    letter-spacing:2px; color:var(--text-dim); padding:0 4px;
+  }
+
+  .security-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); overflow:hidden;
+  }
+
+  .security-card-header {
+    padding:10px 12px; display:flex; align-items:center; gap:8px;
+    cursor:pointer; user-select:none; transition:background 0.2s;
+  }
+
+  .security-card-header:hover { background:var(--surface-2); }
+
+  .security-card-icon {
+    width:28px;height:28px;border-radius:7px;display:flex;align-items:center;
+    justify-content:center;font-size:13px;flex-shrink:0;
+  }
+
+  .security-card-title { flex:1; }
+  .security-card-title h4 { font-size:11px; font-weight:600; }
+  .security-card-title span { font-size:9px; color:var(--text-dim); }
+
+  .security-chevron { color:var(--text-dim); font-size:9px; transition:transform 0.2s; }
+  .security-card.open .security-chevron { transform:rotate(90deg); }
+
+  .security-card-body { max-height:0; overflow:hidden; transition:max-height 0.3s ease; }
+  .security-card.open .security-card-body { max-height:300px; }
+
+  .security-card-content {
+    padding:0 12px 12px; font-size:10px; color:var(--text-muted); line-height:1.7;
+  }
+
+  .security-card-content ul { list-style:none; padding:0; }
+
+  .security-card-content li { padding:2px 0 2px 14px; position:relative; }
+
+  .security-card-content li::before {
+    content:'';position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:2px;
+  }
+
+  .bullet-green::before { background:var(--green); }
+  .bullet-amber::before { background:var(--amber); }
+  .bullet-red::before { background:var(--red); }
+  .bullet-blue::before { background:var(--accent); }
+
+  .engine-badge {
+    display:inline-flex; align-items:center; gap:4px; padding:3px 8px;
+    border-radius:5px; font-size:9px; font-family:var(--mono); font-weight:500;
+    margin-top:4px;
+  }
+
+  /* ─── MODEL TABLE ─── */
+  .models-section { margin-bottom:20px; }
+
+  .models-container {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); overflow:hidden;
+  }
+
+  .models-header {
+    padding:16px 20px 0; display:flex; align-items:center;
+    justify-content:space-between; flex-wrap:wrap; gap:10px;
+  }
+
+  .models-header-left { display:flex; align-items:center; gap:10px; }
+  .models-header-left h3 { font-size:13px; font-weight:600; }
+  .models-header-left span { font-family:var(--mono); font-size:9px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; }
+
+  .model-filters { display:flex; gap:5px; }
+
+  .model-filter-btn {
+    padding:4px 10px; background:var(--surface-3); border:1px solid var(--border);
+    border-radius:6px; color:var(--text-muted); font-size:10px;
+    font-family:var(--mono); cursor:pointer; transition:all 0.2s;
+  }
+
+  .model-filter-btn:hover { border-color:var(--accent); color:var(--text); }
+  .model-filter-btn.active { background:var(--accent-soft); border-color:var(--accent); color:var(--accent); }
+
+  .models-table-wrap { padding:12px 20px 16px; overflow-x:auto; }
+
+  .models-table { width:100%; border-collapse:collapse; font-size:11px; }
+
+  .models-table th {
+    text-align:left; padding:7px 10px; font-family:var(--mono);
+    font-size:9px; text-transform:uppercase; letter-spacing:1.5px;
+    color:var(--text-dim); border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+
+  .models-table td { padding:8px 10px; border-bottom:1px solid rgba(42,43,47,0.5); vertical-align:middle; }
+  .models-table tr:last-child td { border-bottom:none; }
+  .models-table tr:hover td { background:rgba(255,255,255,0.015); }
+
+  .model-name { font-weight:600; display:flex; align-items:center; gap:6px; }
+
+  .model-provider {
+    font-size:8px; padding:2px 5px; border-radius:3px;
+    font-family:var(--mono); font-weight:500; white-space:nowrap;
+  }
+
+  .provider-anthropic { background:rgba(204,120,50,0.15); color:#cc7832; }
+  .provider-openai { background:rgba(16,163,127,0.15); color:#10a37f; }
+  .provider-google { background:rgba(66,133,244,0.15); color:#4285f4; }
+  .provider-meta { background:rgba(0,128,255,0.15); color:#0080ff; }
+  .provider-mistral { background:rgba(255,119,0,0.15); color:#ff7700; }
+  .provider-deepseek { background:rgba(80,120,200,0.15); color:#5078c8; }
+
+  .price-cell { font-family:var(--mono); font-size:10px; color:var(--text-muted); }
+  .price-highlight { color:var(--green); font-weight:500; }
+  .price-expensive { color:var(--amber); }
+
+  .quality-bar { display:flex; gap:2px; }
+  .quality-dot { width:7px;height:7px;border-radius:2px;background:var(--surface-3); }
+  .quality-dot.filled { background:var(--accent); }
+  .quality-dot.filled-green { background:var(--green); }
+  .quality-dot.filled-amber { background:var(--amber); }
+
+  .context-badge {
+    font-family:var(--mono); font-size:9px; padding:2px 6px;
+    border-radius:4px; background:var(--surface-3); color:var(--text-muted); white-space:nowrap;
+  }
+
+  .context-badge.large { background:var(--green-soft); color:var(--green); }
+
+  .pro-con-cell { font-size:10px; color:var(--text-muted); max-width:180px; }
+  .pro-tag { color:var(--green); font-size:9px; }
+  .con-tag { color:var(--red); font-size:9px; }
+
+  .models-note {
+    padding:0 20px 12px; font-size:9px; font-family:var(--mono); color:var(--text-dim);
+  }
+
+  /* ─── WELCOME ─── */
+  .welcome-state {
+    flex:1;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:8px;color:var(--text-dim);text-align:center;padding:24px;
+  }
+
+  .welcome-state .welcome-icon { font-size:32px; margin-bottom:4px; }
+  .welcome-state h3 { font-size:14px; color:var(--text-muted); font-weight:500; }
+  .welcome-state p { font-size:11px; max-width:260px; }
+
+  .suggestion-chips { display:flex; flex-wrap:wrap; gap:5px; justify-content:center; margin-top:8px; }
+
+  .suggestion-chip {
+    padding:5px 10px; background:var(--surface-3); border:1px solid var(--border);
+    border-radius:100px; font-size:10px; color:var(--text-muted);
+    cursor:pointer; transition:all 0.2s; font-family:var(--sans);
+  }
+
+  .suggestion-chip:hover { border-color:var(--accent); color:var(--text); background:var(--accent-soft); }
+
+  /* ─── FOOTER ─── */
+  .demo-footer {
+    text-align:center; padding:16px 0 36px; font-size:10px;
+    color:var(--text-dim); font-family:var(--mono);
+  }
+
+  .demo-footer a { color:var(--accent); text-decoration:none; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width:1100px) {
+    .demo-layout { grid-template-columns:1fr; }
+    .sidebar { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:8px; }
+    .sidebar-label { grid-column:1/-1; }
+    .security-panel { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:8px; }
+    .security-panel-label { grid-column:1/-1; }
+  }
+
+  @media (max-width:768px) {
+    .hero h1 { font-size:30px; }
+    .chat-messages { min-height:260px; }
+    .sidebar { grid-template-columns:1fr; }
+    .top-bar { flex-direction:column; align-items:flex-start; }
+  }
+
+  /* ─── DISABLED STATE ─── */
+  .chat-disabled .chat-messages { opacity:0.5; pointer-events:none; }
+  .chat-disabled .chat-input-area { opacity:0.4; pointer-events:none; }
+</style>
+</head>
+<body>
+
+<div class="page-container">
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <span class="top-logo">AYTEKIN UYSAL</span>
+      <span style="font-size:10px;color:var(--text-dim);font-family:var(--mono)">AI Agent Demo</span>
+    </div>
+    <div class="top-bar-right">
+      <div class="theme-switcher">
+        <button class="theme-btn active" onclick="setTheme('modern')" data-t="theme_modern">Modern</button>
+        <button class="theme-btn" onclick="setTheme('corporate')" data-t="theme_corporate">Corporate</button>
+        <button class="theme-btn" onclick="setTheme('government')" data-t="theme_gov">Government</button>
+        <button class="theme-btn" onclick="setTheme('healthcare')" data-t="theme_health">Healthcare</button>
+      </div>
+      <div class="lang-toggle">
+        <button class="lang-btn active" onclick="setLang('en')">EN</button>
+        <button class="lang-btn" onclick="setLang('de')">DE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge" data-t="hero_badge">Live AI Agent Demo</div>
+    <h1 data-t="hero_title">Enterprise AI Agent</h1>
+    <p data-t="hero_desc">Interactive demo showing how a production-grade AI agent handles your queries. Choose a scenario and start chatting.</p>
+  </div>
+
+  <!-- DEMO CONTROLS -->
+  <div class="demo-controls" id="demoControls">
+    <div class="demo-status">
+      <span class="status-dot active" id="statusDot"></span>
+      <span id="statusText" data-t="status_active">Demo Active</span>
+    </div>
+    <span class="demo-model">claude-sonnet-4-20250514</span>
+    <span class="demo-rate" id="rateLimit">20/20</span>
+    <button class="demo-btn danger" id="toggleBtn" onclick="toggleDemo()" data-t="btn_deactivate">Deactivate</button>
+    <span class="byok-link" onclick="toggleBYOK()" data-t="byok_link">Use own key</span>
+    <div class="byok-area" id="byokArea">
+      <input type="password" class="byok-input" id="byokInput" placeholder="sk-ant-...">
+      <button class="demo-btn primary" onclick="activateBYOK()" data-t="btn_apply">Apply</button>
+    </div>
+  </div>
+
+  <!-- EMAIL GATE (replaces architecture diagram) -->
+  <div class="email-gate" id="emailGate">
+    <div class="email-gate-icon">&#128272;</div>
+    <h3 data-t="gate_title">Unlock Full Architecture View</h3>
+    <p data-t="gate_desc">See the complete data pipeline, security layers, and validation engine behind this agent. Enter your email for instant access.</p>
+    <div class="email-gate-form">
+      <input type="email" class="email-gate-input" id="gateEmail" data-t-placeholder="gate_placeholder" placeholder="your@email.com">
+      <button class="email-gate-btn" onclick="requestAccess()" data-t="gate_btn">Get Access</button>
+    </div>
+    <div class="email-gate-features">
+      <span class="gate-feature"><span class="gate-feature-dot" style="background:var(--red)"></span> <span data-t="gate_f1">Security Engine</span></span>
+      <span class="gate-feature"><span class="gate-feature-dot" style="background:var(--green)"></span> <span data-t="gate_f2">Data Pipeline</span></span>
+      <span class="gate-feature"><span class="gate-feature-dot" style="background:var(--amber)"></span> <span data-t="gate_f3">Validation Flow</span></span>
+      <span class="gate-feature"><span class="gate-feature-dot" style="background:var(--purple)"></span> <span data-t="gate_f4">Auth Layers</span></span>
+    </div>
+  </div>
+
+  <!-- MAIN LAYOUT -->
+  <div class="demo-layout">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-label" data-t="sidebar_scenarios">Scenarios</div>
+
+      <div class="scenario-card active" data-scenario="telecom">
+        <div class="scenario-icon">&#128241;</div>
+        <h3 data-t="sc_telecom">Telecom Support</h3>
+        <p data-t="sc_telecom_desc">Billing, plan changes, SIM activation with static pricing data.</p>
+        <div class="scenario-sources">
+          <span class="source-tag" style="background:var(--green-soft);color:var(--green)">KB</span>
+          <span class="source-tag" style="background:var(--red-soft);color:var(--red)">Static</span>
+          <span class="source-tag" style="background:var(--amber-soft);color:var(--amber)">API</span>
+        </div>
+      </div>
+
+      <div class="scenario-card" data-scenario="saas">
+        <div class="scenario-icon">&#128188;</div>
+        <h3 data-t="sc_saas">SaaS Onboarding</h3>
+        <p data-t="sc_saas_desc">Product setup, features, integrations with live docs.</p>
+        <div class="scenario-sources">
+          <span class="source-tag" style="background:var(--green-soft);color:var(--green)">KB</span>
+          <span class="source-tag" style="background:var(--purple-soft);color:var(--purple)">Web</span>
+        </div>
+      </div>
+
+      <div class="scenario-card" data-scenario="ecommerce">
+        <div class="scenario-icon">&#128722;</div>
+        <h3 data-t="sc_ecom">E-Commerce Advisor</h3>
+        <p data-t="sc_ecom_desc">Recommendations, orders, returns with inventory API.</p>
+        <div class="scenario-sources">
+          <span class="source-tag" style="background:var(--green-soft);color:var(--green)">KB</span>
+          <span class="source-tag" style="background:var(--red-soft);color:var(--red)">Static</span>
+          <span class="source-tag" style="background:var(--amber-soft);color:var(--amber)">API</span>
+          <span class="source-tag" style="background:var(--purple-soft);color:var(--purple)">Web</span>
+        </div>
+      </div>
+
+      <div class="sidebar-label" data-t="sidebar_custom">Custom</div>
+
+      <div class="scenario-card" data-scenario="custom">
+        <div class="scenario-icon">&#128295;</div>
+        <h3 data-t="sc_custom">Build Your Own</h3>
+        <p data-t="sc_custom_desc">Custom persona, domain, and rules.</p>
+        <div class="custom-input-area" id="customArea">
+          <textarea class="custom-textarea" id="customPrompt" data-t-placeholder="custom_placeholder" placeholder="Describe the agent role, tone, domain..."></textarea>
+          <button class="apply-btn" onclick="applyCustomScenario()" data-t="btn_activate">Activate Agent</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="chat-container" id="chatContainer">
+      <div class="chat-header">
+        <div class="chat-header-left">
+          <div class="agent-avatar">&#129302;</div>
+          <div class="agent-info">
+            <h4 id="agentName">Telecom Support Agent</h4>
+            <span id="agentStatus">&#9679; Online</span>
+          </div>
+        </div>
+        <button class="clear-btn" onclick="clearChat()" data-t="btn_clear">Clear</button>
+      </div>
+
+      <div class="chat-messages" id="chatMessages">
+        <div class="welcome-state" id="welcomeState">
+          <div class="welcome-icon">&#128172;</div>
+          <h3 data-t="welcome_title">Start a conversation</h3>
+          <p data-t="welcome_desc">Type a message or pick a suggestion to see the agent in action.</p>
+          <div class="suggestion-chips" id="suggestionChips">
+            <div class="suggestion-chip" onclick="sendSuggestion(this)">My bill seems too high</div>
+            <div class="suggestion-chip" onclick="sendSuggestion(this)">How do I activate my eSIM?</div>
+            <div class="suggestion-chip" onclick="sendSuggestion(this)">I want to change my plan</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input-area">
+        <textarea class="chat-input" id="chatInput" data-t-placeholder="chat_placeholder" placeholder="Type your message..." rows="1" onkeydown="handleKeyDown(event)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- SECURITY PANEL -->
+    <div class="security-panel">
+      <div class="security-panel-label" data-t="sec_label">Security & Engine</div>
+
+      <div class="security-card open">
+        <div class="security-card-header" onclick="toggleCard(this)">
+          <div class="security-card-icon" style="background:var(--red-soft)">&#128737;</div>
+          <div class="security-card-title">
+            <h4 data-t="sec_halluc">Hallucination Prevention</h4>
+            <span data-t="sec_halluc_sub">Static Data Engine</span>
+          </div>
+          <span class="security-chevron">&#9654;</span>
+        </div>
+        <div class="security-card-body">
+          <div class="security-card-content">
+            <ul>
+              <li class="bullet-red" data-t="sec_halluc_1">Critical facts are never LLM-generated &mdash; injected from verified static sources</li>
+              <li class="bullet-green" data-t="sec_halluc_2">Immutable reference data layer that cannot be overridden by prompt context</li>
+              <li class="bullet-amber" data-t="sec_halluc_3">Response cross-validation against source-of-truth before delivery</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="security-card">
+        <div class="security-card-header" onclick="toggleCard(this)">
+          <div class="security-card-icon" style="background:var(--accent-soft)">&#128274;</div>
+          <div class="security-card-title">
+            <h4 data-t="sec_sep">Data Separation</h4>
+            <span data-t="sec_sep_sub">Isolated Pipelines</span>
+          </div>
+          <span class="security-chevron">&#9654;</span>
+        </div>
+        <div class="security-card-body">
+          <div class="security-card-content">
+            <ul>
+              <li class="bullet-green" data-t="sec_sep_1">KB, Web, and Static Data flow through isolated pipelines</li>
+              <li class="bullet-amber" data-t="sec_sep_2">External data passes through sanitization before reaching LLM context</li>
+              <li class="bullet-blue" data-t="sec_sep_3">Source attribution on every response &mdash; traceable to origin</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="security-card">
+        <div class="security-card-header" onclick="toggleCard(this)">
+          <div class="security-card-icon" style="background:var(--amber-soft)">&#128272;</div>
+          <div class="security-card-title">
+            <h4 data-t="sec_auth">Auth & Access Tiers</h4>
+            <span>Public / SSO / RBAC</span>
+          </div>
+          <span class="security-chevron">&#9654;</span>
+        </div>
+        <div class="security-card-body">
+          <div class="security-card-content">
+            <ul>
+              <li class="bullet-green" data-t="sec_auth_1">Public tier: KB, FAQs &mdash; no auth required</li>
+              <li class="bullet-amber" data-t="sec_auth_2">SSO tier: Internal docs, customer data &mdash; requires authentication</li>
+              <li class="bullet-red" data-t="sec_auth_3">Role-based: Admin data only with explicit role verification</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="security-card">
+        <div class="security-card-header" onclick="toggleCard(this)">
+          <div class="security-card-icon" style="background:var(--green-soft)">&#128220;</div>
+          <div class="security-card-title">
+            <h4 data-t="sec_prompt">Prompt Security</h4>
+            <span data-t="sec_prompt_sub">Guardrails & Constraints</span>
+          </div>
+          <span class="security-chevron">&#9654;</span>
+        </div>
+        <div class="security-card-body">
+          <div class="security-card-content">
+            <ul>
+              <li class="bullet-red" data-t="sec_prompt_1">Hard boundaries on what the agent must never do</li>
+              <li class="bullet-green" data-t="sec_prompt_2">Immutable security templates stored separately from user prompts</li>
+              <li class="bullet-blue" data-t="sec_prompt_3">Injection-resistant architecture: user input sandboxed from system instructions</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="security-card">
+        <div class="security-card-header" onclick="toggleCard(this)">
+          <div class="security-card-icon" style="background:var(--purple-soft)">&#128301;</div>
+          <div class="security-card-title">
+            <h4 data-t="sec_val">Validation Engine</h4>
+            <span data-t="sec_val_sub">Pre-delivery Checks</span>
+          </div>
+          <span class="security-chevron">&#9654;</span>
+        </div>
+        <div class="security-card-body">
+          <div class="security-card-content">
+            <ul>
+              <li class="bullet-red" data-t="sec_val_1">Output checked against static reference data before delivery</li>
+              <li class="bullet-amber" data-t="sec_val_2">Web-sourced claims flagged with confidence scores</li>
+              <li class="bullet-green" data-t="sec_val_3">Critical data must match verified sources or response is blocked</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODEL TABLE -->
+  <div class="models-section">
+    <div class="models-container">
+      <div class="models-header">
+        <div class="models-header-left">
+          <h3 data-t="models_title">LLM Model Landscape</h3>
+          <span data-t="models_sub">Pricing & Quality</span>
+        </div>
+        <div class="model-filters">
+          <button class="model-filter-btn active" onclick="filterModels('all',this)" data-t="filter_all">All</button>
+          <button class="model-filter-btn" onclick="filterModels('budget',this)" data-t="filter_budget">Budget</button>
+          <button class="model-filter-btn" onclick="filterModels('balanced',this)" data-t="filter_balanced">Balanced</button>
+          <button class="model-filter-btn" onclick="filterModels('premium',this)" data-t="filter_premium">Premium</button>
+        </div>
+      </div>
+      <div class="models-table-wrap">
+        <table class="models-table">
+          <thead><tr>
+            <th data-t="th_model">Model</th>
+            <th data-t="th_input">Input/1M</th>
+            <th data-t="th_output">Output/1M</th>
+            <th data-t="th_context">Context</th>
+            <th data-t="th_quality">Quality</th>
+            <th data-t="th_bestfor">Best For</th>
+            <th data-t="th_tradeoff">Trade-off</th>
+          </tr></thead>
+          <tbody id="modelsBody"></tbody>
+        </table>
+      </div>
+      <div class="models-note" data-t="models_note">Prices as of Q2 2026. Caching & batch discounts (50-90%) not shown.</div>
+    </div>
+  </div>
+
+  <div class="demo-footer">
+    Built by Aytekin Uysal &middot; <a href="https://linkedin.com/in/aytekin-uysal" target="_blank">LinkedIn</a>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// TRANSLATIONS
+// ═══════════════════════════════════════
+const T = {
+  en: {
+    hero_badge: 'Live AI Agent Demo',
+    hero_title: 'Enterprise AI Agent',
+    hero_desc: 'Interactive demo showing how a production-grade AI agent handles your queries. Choose a scenario and start chatting.',
+    status_active: 'Demo Active',
+    status_paused: 'Demo Paused',
+    btn_deactivate: 'Deactivate',
+    btn_reactivate: 'Reactivate',
+    byok_link: 'Use own key',
+    btn_apply: 'Apply',
+    btn_clear: 'Clear',
+    btn_activate: 'Activate Agent',
+    gate_title: 'Unlock Full Architecture View',
+    gate_desc: 'See the complete data pipeline, security layers, and validation engine behind this agent. Enter your email for instant access.',
+    gate_placeholder: 'your@email.com',
+    gate_btn: 'Get Access',
+    gate_f1: 'Security Engine',
+    gate_f2: 'Data Pipeline',
+    gate_f3: 'Validation Flow',
+    gate_f4: 'Auth Layers',
+    gate_success: 'Access granted! Check your email for the full architecture breakdown.',
+    sidebar_scenarios: 'Scenarios',
+    sidebar_custom: 'Custom',
+    sc_telecom: 'Telecom Support',
+    sc_telecom_desc: 'Billing, plan changes, SIM activation with static pricing data.',
+    sc_saas: 'SaaS Onboarding',
+    sc_saas_desc: 'Product setup, features, integrations with live docs.',
+    sc_ecom: 'E-Commerce Advisor',
+    sc_ecom_desc: 'Recommendations, orders, returns with inventory API.',
+    sc_custom: 'Build Your Own',
+    sc_custom_desc: 'Custom persona, domain, and rules.',
+    custom_placeholder: 'Describe the agent role, tone, domain...',
+    welcome_title: 'Start a conversation',
+    welcome_desc: 'Type a message or pick a suggestion to see the agent in action.',
+    chat_placeholder: 'Type your message...',
+    chat_disabled: 'Demo is paused. Reactivate to continue.',
+    sec_label: 'Security & Engine',
+    sec_halluc: 'Hallucination Prevention',
+    sec_halluc_sub: 'Static Data Engine',
+    sec_halluc_1: 'Critical facts are never LLM-generated \u2014 injected from verified static sources',
+    sec_halluc_2: 'Immutable reference data layer that cannot be overridden by prompt context',
+    sec_halluc_3: 'Response cross-validation against source-of-truth before delivery',
+    sec_sep: 'Data Separation',
+    sec_sep_sub: 'Isolated Pipelines',
+    sec_sep_1: 'KB, Web, and Static Data flow through isolated pipelines',
+    sec_sep_2: 'External data passes through sanitization before reaching LLM context',
+    sec_sep_3: 'Source attribution on every response \u2014 traceable to origin',
+    sec_auth: 'Auth & Access Tiers',
+    sec_auth_1: 'Public tier: KB, FAQs \u2014 no auth required',
+    sec_auth_2: 'SSO tier: Internal docs, customer data \u2014 requires authentication',
+    sec_auth_3: 'Role-based: Admin data only with explicit role verification',
+    sec_prompt: 'Prompt Security',
+    sec_prompt_sub: 'Guardrails & Constraints',
+    sec_prompt_1: 'Hard boundaries on what the agent must never do',
+    sec_prompt_2: 'Immutable security templates stored separately from user prompts',
+    sec_prompt_3: 'Injection-resistant architecture: user input sandboxed from system instructions',
+    sec_val: 'Validation Engine',
+    sec_val_sub: 'Pre-delivery Checks',
+    sec_val_1: 'Output checked against static reference data before delivery',
+    sec_val_2: 'Web-sourced claims flagged with confidence scores',
+    sec_val_3: 'Critical data must match verified sources or response is blocked',
+    models_title: 'LLM Model Landscape',
+    models_sub: 'Pricing & Quality',
+    models_note: 'Prices as of Q2 2026. Caching & batch discounts (50-90%) not shown.',
+    filter_all: 'All', filter_budget: 'Budget', filter_balanced: 'Balanced', filter_premium: 'Premium',
+    th_model: 'Model', th_input: 'Input/1M', th_output: 'Output/1M', th_context: 'Context', th_quality: 'Quality', th_bestfor: 'Best For', th_tradeoff: 'Trade-off',
+    theme_modern: 'Modern', theme_corporate: 'Corporate', theme_gov: 'Government', theme_health: 'Healthcare',
+    // Source badge labels
+    src_kb: 'KB', src_api: 'API', src_static: 'Static', src_web: 'Web', src_auth: 'Auth',
+  },
+  de: {
+    hero_badge: 'Live AI-Agent Demo',
+    hero_title: 'Enterprise AI-Agent',
+    hero_desc: 'Interaktive Demo die zeigt, wie ein produktionsreifer AI-Agent Ihre Anfragen verarbeitet. W\u00e4hlen Sie ein Szenario und starten Sie den Chat.',
+    status_active: 'Demo Aktiv',
+    status_paused: 'Demo Pausiert',
+    btn_deactivate: 'Deaktivieren',
+    btn_reactivate: 'Reaktivieren',
+    byok_link: 'Eigenen Key nutzen',
+    btn_apply: 'Anwenden',
+    btn_clear: 'Leeren',
+    btn_activate: 'Agent Aktivieren',
+    gate_title: 'Vollst\u00e4ndige Architektur freischalten',
+    gate_desc: 'Sehen Sie die komplette Datenpipeline, Sicherheitsebenen und Validierungs-Engine hinter diesem Agenten. E-Mail eingeben f\u00fcr sofortigen Zugang.',
+    gate_placeholder: 'ihre@email.com',
+    gate_btn: 'Zugang erhalten',
+    gate_f1: 'Security Engine',
+    gate_f2: 'Daten-Pipeline',
+    gate_f3: 'Validierungs-Flow',
+    gate_f4: 'Auth-Ebenen',
+    gate_success: 'Zugang gew\u00e4hrt! Pr\u00fcfen Sie Ihre E-Mail f\u00fcr die vollst\u00e4ndige Architektur\u00fcbersicht.',
+    sidebar_scenarios: 'Szenarien',
+    sidebar_custom: 'Individuell',
+    sc_telecom: 'Telecom Support',
+    sc_telecom_desc: 'Rechnungen, Tarifwechsel, SIM-Aktivierung mit statischen Preisdaten.',
+    sc_saas: 'SaaS Onboarding',
+    sc_saas_desc: 'Produkteinrichtung, Features, Integrationen mit Live-Docs.',
+    sc_ecom: 'E-Commerce Berater',
+    sc_ecom_desc: 'Empfehlungen, Bestellungen, Retouren mit Inventar-API.',
+    sc_custom: 'Eigenen Agent bauen',
+    sc_custom_desc: 'Eigene Persona, Fachgebiet und Regeln.',
+    custom_placeholder: 'Beschreiben Sie die Rolle, den Ton, das Fachgebiet...',
+    welcome_title: 'Starten Sie ein Gespr\u00e4ch',
+    welcome_desc: 'Nachricht eingeben oder Vorschlag w\u00e4hlen um den Agenten in Aktion zu sehen.',
+    chat_placeholder: 'Ihre Nachricht...',
+    chat_disabled: 'Demo ist pausiert. Reaktivieren um fortzufahren.',
+    sec_label: 'Sicherheit & Engine',
+    sec_halluc: 'Halluzinations-Pr\u00e4vention',
+    sec_halluc_sub: 'Statische Daten-Engine',
+    sec_halluc_1: 'Kritische Fakten werden nie vom LLM generiert \u2014 aus verifizierten statischen Quellen injiziert',
+    sec_halluc_2: 'Unver\u00e4nderliche Referenzdaten-Schicht, die nicht durch Prompt-Kontext \u00fcberschrieben werden kann',
+    sec_halluc_3: 'Antwort-Kreuzvalidierung gegen Wahrheitsquelle vor Auslieferung',
+    sec_sep: 'Datentrennung',
+    sec_sep_sub: 'Isolierte Pipelines',
+    sec_sep_1: 'KB, Web und statische Daten fliessen durch isolierte Pipelines',
+    sec_sep_2: 'Externe Daten durchlaufen Sanitisierung bevor sie den LLM-Kontext erreichen',
+    sec_sep_3: 'Quellenangabe bei jeder Antwort \u2014 r\u00fcckverfolgbar zum Ursprung',
+    sec_auth: 'Auth & Zugangsstufen',
+    sec_auth_1: '\u00d6ffentlich: KB, FAQs \u2014 keine Authentifizierung n\u00f6tig',
+    sec_auth_2: 'SSO: Interne Docs, Kundendaten \u2014 erfordert Authentifizierung',
+    sec_auth_3: 'Rollenbasiert: Admin-Daten nur mit expliziter Rollenverifizierung',
+    sec_prompt: 'Prompt-Sicherheit',
+    sec_prompt_sub: 'Leitplanken & Einschr\u00e4nkungen',
+    sec_prompt_1: 'Harte Grenzen f\u00fcr was der Agent niemals tun darf',
+    sec_prompt_2: 'Unver\u00e4nderliche Sicherheits-Templates getrennt von Benutzer-Prompts',
+    sec_prompt_3: 'Injektionsresistente Architektur: Benutzereingabe isoliert von Systemanweisungen',
+    sec_val: 'Validierungs-Engine',
+    sec_val_sub: 'Pr\u00fcfungen vor Auslieferung',
+    sec_val_1: 'Ausgabe wird gegen statische Referenzdaten gepr\u00fcft',
+    sec_val_2: 'Web-basierte Aussagen mit Konfidenz-Scores markiert',
+    sec_val_3: 'Kritische Daten m\u00fcssen verifizierte Quellen matchen oder Antwort wird blockiert',
+    models_title: 'LLM-Modell\u00fcbersicht',
+    models_sub: 'Preise & Qualit\u00e4t',
+    models_note: 'Preise Stand Q2 2026. Caching- & Batch-Rabatte (50-90%) nicht dargestellt.',
+    filter_all: 'Alle', filter_budget: 'G\u00fcnstig', filter_balanced: 'Ausgewogen', filter_premium: 'Premium',
+    th_model: 'Modell', th_input: 'Input/1M', th_output: 'Output/1M', th_context: 'Kontext', th_quality: 'Qualit\u00e4t', th_bestfor: 'Ideal f\u00fcr', th_tradeoff: 'Abw\u00e4gung',
+    theme_modern: 'Modern', theme_corporate: 'Corporate', theme_gov: 'Staatlich', theme_health: 'Gesundheit',
+    src_kb: 'KB', src_api: 'API', src_static: 'Statisch', src_web: 'Web', src_auth: 'Auth',
+  }
+};
+
+let currentLang = 'en';
+
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent === lang.toUpperCase()));
+
+  // Update all data-t elements
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const key = el.getAttribute('data-t');
+    if (T[lang][key]) el.textContent = T[lang][key];
+  });
+
+  // Update placeholders
+  document.querySelectorAll('[data-t-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-t-placeholder');
+    if (T[lang][key]) el.placeholder = T[lang][key];
+  });
+
+  // Update suggestions
+  updateSuggestions();
+}
+
+// ═══════════════════════════════════════
+// THEMES
+// ═══════════════════════════════════════
+const themes = {
+  modern: {
+    '--bg':'#08090a','--surface':'#111214','--surface-2':'#191a1d','--surface-3':'#212225',
+    '--border':'#2a2b2f','--text':'#e8e8ec','--text-muted':'#7c7c86','--text-dim':'#55555e',
+    '--accent':'#3b82f6','--accent-soft':'rgba(59,130,246,0.12)','--accent-glow':'rgba(59,130,246,0.06)',
+    '--green':'#22c55e','--green-soft':'rgba(34,197,94,0.12)',
+    '--amber':'#f59e0b','--amber-soft':'rgba(245,158,11,0.12)',
+    '--red':'#ef4444','--red-soft':'rgba(239,68,68,0.12)',
+    '--purple':'#a855f7','--purple-soft':'rgba(168,85,247,0.12)',
+    '--user-bg':'#1e293b','--agent-bg':'var(--surface-2)',
+    '--heading-font':"'Instrument Serif', serif",
+    '--radius':'14px'
+  },
+  corporate: {
+    '--bg':'#0f1624','--surface':'#162032','--surface-2':'#1c2940','--surface-3':'#24334d',
+    '--border':'#2d3f5c','--text':'#e4e8f0','--text-muted':'#8b9ab8','--text-dim':'#5a6d8a',
+    '--accent':'#c9a84c','--accent-soft':'rgba(201,168,76,0.12)','--accent-glow':'rgba(201,168,76,0.06)',
+    '--green':'#4ade80','--green-soft':'rgba(74,222,128,0.12)',
+    '--amber':'#fbbf24','--amber-soft':'rgba(251,191,36,0.12)',
+    '--red':'#f87171','--red-soft':'rgba(248,113,113,0.12)',
+    '--purple':'#c084fc','--purple-soft':'rgba(192,132,252,0.12)',
+    '--user-bg':'#1e3054','--agent-bg':'var(--surface-2)',
+    '--heading-font':"Georgia, 'Times New Roman', serif",
+    '--radius':'10px'
+  },
+  government: {
+    '--bg':'#f0f2f5','--surface':'#ffffff','--surface-2':'#f8f9fb','--surface-3':'#eef0f4',
+    '--border':'#d1d5db','--text':'#1a1a2e','--text-muted':'#4a4a6a','--text-dim':'#8888a0',
+    '--accent':'#003366','--accent-soft':'rgba(0,51,102,0.08)','--accent-glow':'rgba(0,51,102,0.04)',
+    '--green':'#16a34a','--green-soft':'rgba(22,163,74,0.1)',
+    '--amber':'#d97706','--amber-soft':'rgba(217,119,6,0.1)',
+    '--red':'#dc2626','--red-soft':'rgba(220,38,38,0.1)',
+    '--purple':'#7c3aed','--purple-soft':'rgba(124,58,237,0.1)',
+    '--user-bg':'#e0e7f0','--agent-bg':'var(--surface-2)',
+    '--heading-font':"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    '--radius':'8px'
+  },
+  healthcare: {
+    '--bg':'#f8fffe','--surface':'#ffffff','--surface-2':'#f0fdf9','--surface-3':'#e6f7f2',
+    '--border':'#c6e7dc','--text':'#1a2e28','--text-muted':'#4a6b60','--text-dim':'#88a89c',
+    '--accent':'#10b981','--accent-soft':'rgba(16,185,129,0.1)','--accent-glow':'rgba(16,185,129,0.05)',
+    '--green':'#059669','--green-soft':'rgba(5,150,105,0.1)',
+    '--amber':'#d97706','--amber-soft':'rgba(217,119,6,0.1)',
+    '--red':'#ef4444','--red-soft':'rgba(239,68,68,0.1)',
+    '--purple':'#8b5cf6','--purple-soft':'rgba(139,92,246,0.1)',
+    '--user-bg':'#d1fae5','--agent-bg':'var(--surface-2)',
+    '--heading-font':"'DM Sans', sans-serif",
+    '--radius':'16px'
+  }
+};
+
+let currentTheme = 'modern';
+
+function setTheme(name) {
+  currentTheme = name;
+  const vars = themes[name];
+  const root = document.documentElement;
+  Object.entries(vars).forEach(([k,v]) => root.style.setProperty(k, v));
+  document.querySelectorAll('.theme-btn').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('onclick').includes(name));
+  });
+}
+
+// ═══════════════════════════════════════
+// SCENARIOS
+// ═══════════════════════════════════════
+const scenarios = {
+  telecom: {
+    name: { en: 'Telecom Support Agent', de: 'Telecom Support Agent' },
+    system: `You are a professional customer service agent for "ConnectMobile", a Swiss mobile provider. Your name is Ava.
+BEHAVIOR: Be friendly, concise, solution-oriented. Greet on first message. Ask max 1-2 clarifying questions. Offer escalation if needed. Handle: billing, plan changes, network issues, SIM/eSIM, roaming, porting. Respond in the user's language.
+KNOWLEDGE: Plans: Basic (CHF 19.90/mo, 5GB), Smart (CHF 34.90/mo, 20GB), Unlimited (CHF 54.90/mo). eSIM: Settings > Mobile > Add eSIM > Scan QR. Roaming: EU in Smart/Unlimited; CHF 0.59/min, CHF 0.19/SMS elsewhere. Porting: 1-3 days, need Porting Code.
+RULES: Never invent account data. Keep responses short (2-4 sentences). End complex interactions with next steps summary.`,
+    suggestions: {
+      en: ['My bill seems too high', 'How do I activate my eSIM?', 'I want to change my plan'],
+      de: ['Meine Rechnung scheint zu hoch', 'Wie aktiviere ich meine eSIM?', 'Ich m\u00f6chte meinen Tarif wechseln']
+    },
+    sources: ['kb', 'static', 'api']
+  },
+  saas: {
+    name: { en: 'SaaS Onboarding Agent', de: 'SaaS Onboarding Agent' },
+    system: `You are an onboarding assistant for "FlowBoard", a project management SaaS. Your name is Max.
+BEHAVIOR: Enthusiastic but not overwhelming. Step-by-step guidance. Numbered steps for processes. Proactive feature suggestions. Respond in user's language.
+KNOWLEDGE: Features: Kanban, Gantt, Time tracking, Chat, Automations, Integrations (Slack, GitHub, Figma). Onboarding: Create workspace > Invite team > Create project > Set up automations. Pricing: Starter (free, 3 projects), Pro ($12/user/mo), Enterprise (custom).
+RULES: Don't overwhelm. Max 3-4 sentences. Always end with next step or question.`,
+    suggestions: {
+      en: ['I just signed up, what first?', 'How do I invite my team?', 'Can I connect Slack?'],
+      de: ['Gerade registriert, was zuerst?', 'Wie lade ich mein Team ein?', 'Kann ich Slack verbinden?']
+    },
+    sources: ['kb', 'web']
+  },
+  ecommerce: {
+    name: { en: 'E-Commerce Advisor', de: 'E-Commerce Berater' },
+    system: `You are a shopping assistant for "NordStyle", a premium Scandinavian furniture store. Your name is Elsa.
+BEHAVIOR: Warm, knowledgeable, taste-conscious. Ask about preferences, room, budget, style. Suggest complementary products naturally. Respond in user's language.
+KNOWLEDGE: Categories: Living, Bedroom, Office, Kitchen, Lighting, Textiles. Bestsellers: Birch Lounge Chair (CHF 890), Hygge Sofa (CHF 2400), Fjord Lamp (CHF 189). Shipping: Free over CHF 150, 3-5 days, express CHF 29. Returns: 30 days free. Promo: 15% off lighting with LIGHTUP.
+RULES: Max 3 recommendations. Always mention price + key feature. End with question.`,
+    suggestions: {
+      en: ['I need a desk for a small office', "What's trending?", 'Anything under CHF 200?'],
+      de: ['Ich brauche einen Schreibtisch', 'Was ist gerade im Trend?', 'Etwas unter CHF 200?']
+    },
+    sources: ['kb', 'static', 'api', 'web']
+  },
+  custom: {
+    name: { en: 'Custom Agent', de: 'Eigener Agent' },
+    system: '',
+    suggestions: {
+      en: ['Hello, what can you do?', 'Tell me about yourself', 'How can you help me?'],
+      de: ['Hallo, was kannst du?', 'Erz\u00e4hl mir \u00fcber dich', 'Wie kannst du mir helfen?']
+    },
+    sources: ['kb']
+  }
+};
+
+// ═══════════════════════════════════════
+// CONFIG - Replace with your Worker URL after deployment
+// ═══════════════════════════════════════
+const PROXY_URL = 'YOUR_WORKER_URL'; // e.g. https://ai-demo-proxy.your-subdomain.workers.dev
+
+let currentScenario = 'telecom';
+let conversationHistory = [];
+let isLoading = false;
+let demoActive = true;
+let messageCount = 0;
+let apiMode = 'hosted';
+const MAX_MESSAGES = 20;
+
+// Generate persistent session ID
+function getSessionId() {
+  let sid = localStorage.getItem('demo_session_id');
+  if (!sid) {
+    sid = 'sess_' + crypto.randomUUID();
+    localStorage.setItem('demo_session_id', sid);
+  }
+  return sid;
+}
+
+// ═══════════════════════════════════════
+// SOURCE BADGE MAPPING
+// ═══════════════════════════════════════
+function getSourceBadges(scenario, text) {
+  const s = scenarios[scenario];
+  const badges = [];
+  const t = text.toLowerCase();
+  const lang = currentLang;
+
+  // Always show KB for matching scenarios
+  if (s.sources.includes('kb')) badges.push({ cls: 'src-kb', label: T[lang].src_kb });
+  if (s.sources.includes('static')) {
+    if (t.match(/bill|price|plan|cost|tarif|rechnung|preis|kosten|chf|shipping|return/))
+      badges.push({ cls: 'src-static', label: T[lang].src_static });
+  }
+  if (s.sources.includes('api')) {
+    if (t.match(/account|order|status|track|bestell|konto|bestellung/))
+      badges.push({ cls: 'src-api', label: T[lang].src_api });
+  }
+  if (s.sources.includes('web')) {
+    if (t.match(/trend|latest|new|review|slack|github|integration|connect|verbind|neu/))
+      badges.push({ cls: 'src-web', label: T[lang].src_web });
+  }
+  // If no specific match, just show KB
+  if (badges.length === 0) badges.push({ cls: 'src-kb', label: T[lang].src_kb });
+  return badges;
+}
+
+function createSourceBadges(badges) {
+  const container = document.createElement('div');
+  container.className = 'source-badges';
+  badges.forEach((b, i) => {
+    const span = document.createElement('span');
+    span.className = `src-badge ${b.cls}`;
+    span.textContent = `\u2713 ${b.label}`;
+    container.appendChild(span);
+    setTimeout(() => span.classList.add('visible'), (i + 1) * 150);
+  });
+  return container;
+}
+
+// ═══════════════════════════════════════
+// DEMO CONTROLS
+// ═══════════════════════════════════════
+function toggleDemo() {
+  demoActive = !demoActive;
+  const dot = document.getElementById('statusDot');
+  const text = document.getElementById('statusText');
+  const btn = document.getElementById('toggleBtn');
+  const container = document.getElementById('chatContainer');
+
+  if (demoActive) {
+    dot.className = 'status-dot active';
+    text.textContent = T[currentLang].status_active;
+    btn.textContent = T[currentLang].btn_deactivate;
+    btn.className = 'demo-btn danger';
+    container.classList.remove('chat-disabled');
+    document.getElementById('chatInput').disabled = false;
+  } else {
+    dot.className = 'status-dot paused';
+    text.textContent = T[currentLang].status_paused;
+    btn.textContent = T[currentLang].btn_reactivate;
+    btn.className = 'demo-btn primary';
+    container.classList.add('chat-disabled');
+    document.getElementById('chatInput').disabled = true;
+    addSystemMessage(T[currentLang].chat_disabled);
+  }
+}
+
+function toggleBYOK() {
+  document.getElementById('byokArea').classList.toggle('visible');
+}
+
+function activateBYOK() {
+  const key = document.getElementById('byokInput').value.trim();
+  if (key.startsWith('sk-ant-')) {
+    apiMode = 'byok';
+    document.getElementById('byokArea').classList.remove('visible');
+    addSystemMessage('BYOK mode activated');
+  }
+}
+
+function updateRateLimit() {
+  document.getElementById('rateLimit').textContent = `${MAX_MESSAGES - messageCount}/${MAX_MESSAGES}`;
+}
+
+// ═══════════════════════════════════════
+// EMAIL GATE
+// ═══════════════════════════════════════
+async function requestAccess() {
+  const email = document.getElementById('gateEmail').value.trim();
+  if (!email || !email.includes('@')) return;
+
+  const gate = document.getElementById('emailGate');
+  const btn = gate.querySelector('.email-gate-btn');
+  btn.textContent = '...';
+  btn.disabled = true;
+
+  try {
+    if (PROXY_URL !== 'YOUR_WORKER_URL') {
+      await fetch(`${PROXY_URL}/lead`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+    }
+  } catch (e) {
+    // Silently continue - lead storage is best-effort
+    console.log('Lead endpoint not available yet');
+  }
+
+  // Show success regardless (frontend-only fallback)
+  gate.innerHTML = `<div class="email-gate-icon" style="color:var(--green)">&#10003;</div><h3 style="color:var(--green)">${T[currentLang].gate_success}</h3>`;
+  // Architecture content would be fetched from backend with token in production
+}
+
+// ═══════════════════════════════════════
+// SECURITY PANEL
+// ═══════════════════════════════════════
+function toggleCard(header) {
+  header.closest('.security-card').classList.toggle('open');
+}
+
+// ═══════════════════════════════════════
+// SCENARIO SELECTION
+// ═══════════════════════════════════════
+document.querySelectorAll('.scenario-card').forEach(card => {
+  card.addEventListener('click', () => {
+    const sc = card.dataset.scenario;
+    document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    if (sc === 'custom') {
+      document.getElementById('customArea').classList.add('visible');
+      return;
+    }
+    document.getElementById('customArea').classList.remove('visible');
+    switchScenario(sc);
+  });
+});
+
+function switchScenario(sc) {
+  currentScenario = sc;
+  conversationHistory = [];
+  const s = scenarios[sc];
+  document.getElementById('agentName').textContent = s.name[currentLang];
+  updateSuggestions();
+}
+
+function updateSuggestions() {
+  const s = scenarios[currentScenario];
+  const msgs = document.getElementById('chatMessages');
+  msgs.innerHTML = '';
+  const welcome = document.createElement('div');
+  welcome.className = 'welcome-state';
+  welcome.id = 'welcomeState';
+  welcome.innerHTML = `
+    <div class="welcome-icon">&#128172;</div>
+    <h3>${T[currentLang].welcome_title}</h3>
+    <p>${T[currentLang].welcome_desc}</p>
+    <div class="suggestion-chips">
+      ${s.suggestions[currentLang].map(sg => `<div class="suggestion-chip" onclick="sendSuggestion(this)">${escapeHtml(sg)}</div>`).join('')}
+    </div>`;
+  msgs.appendChild(welcome);
+}
+
+function applyCustomScenario() {
+  const prompt = document.getElementById('customPrompt').value.trim();
+  if (!prompt) return;
+  scenarios.custom.system = prompt;
+  switchScenario('custom');
+}
+
+// ═══════════════════════════════════════
+// CHAT
+// ═══════════════════════════════════════
+function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+function addMessage(text, role) {
+  const w = document.getElementById('welcomeState'); if (w) w.remove();
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = `message ${role}`;
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+function addSystemMessage(text) {
+  const w = document.getElementById('welcomeState'); if (w) w.remove();
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'message system';
+  div.textContent = text;
+  msgs.appendChild(div);
+}
+
+function showTyping() {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'typing-indicator'; div.id = 'typingIndicator';
+  div.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function hideTyping() { const el = document.getElementById('typingIndicator'); if (el) el.remove(); }
+
+function sendSuggestion(el) {
+  document.getElementById('chatInput').value = el.textContent;
+  sendMessage();
+}
+
+function handleKeyDown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text || isLoading || !demoActive) return;
+
+  if (apiMode === 'hosted' && messageCount >= MAX_MESSAGES) {
+    addSystemMessage(currentLang === 'de' ? 'Session-Limit erreicht (20 Nachrichten).' : 'Session limit reached (20 messages).');
+    return;
+  }
+
+  input.value = '';
+  input.style.height = 'auto';
+  addMessage(text, 'user');
+  conversationHistory.push({ role: 'user', content: text });
+
+  isLoading = true;
+  document.getElementById('sendBtn').disabled = true;
+  showTyping();
+
+  const badges = getSourceBadges(currentScenario, text);
+
+  try {
+    const scenario = scenarios[currentScenario];
+    let response;
+
+    if (apiMode === 'byok') {
+      const key = document.getElementById('byokInput').value.trim();
+      response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: scenario.system || 'You are a helpful assistant. Be concise and friendly.',
+          messages: conversationHistory
+        })
+      });
+    } else {
+      // Hosted proxy with session-based rate limiting
+      response = await fetch(`${PROXY_URL}/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Session-ID': getSessionId()
+        },
+        body: JSON.stringify({
+          system: scenario.system || 'You are a helpful assistant.',
+          messages: conversationHistory
+        })
+      });
+    }
+
+    const data = await response.json();
+    hideTyping();
+
+    if (data.content && data.content.length > 0) {
+      const reply = data.content.map(c => c.text || '').join('');
+      addMessage(reply, 'agent');
+      // Add source badges under agent message
+      const msgs = document.getElementById('chatMessages');
+      msgs.appendChild(createSourceBadges(badges));
+      msgs.scrollTop = msgs.scrollHeight;
+      conversationHistory.push({ role: 'assistant', content: reply });
+      messageCount++;
+      updateRateLimit();
+    } else if (data.error) {
+      addSystemMessage(`API Error: ${data.error.message}`);
+    }
+  } catch (err) {
+    hideTyping();
+    if (apiMode === 'hosted') {
+      // Fallback: show simulated response when proxy not yet deployed
+      const simReply = getSimulatedReply(currentScenario, text);
+      addMessage(simReply, 'agent');
+      const msgs = document.getElementById('chatMessages');
+      msgs.appendChild(createSourceBadges(badges));
+      msgs.scrollTop = msgs.scrollHeight;
+      conversationHistory.push({ role: 'assistant', content: simReply });
+      messageCount++;
+      updateRateLimit();
+    } else {
+      addSystemMessage('Connection error');
+      console.error(err);
+    }
+  }
+
+  isLoading = false;
+  document.getElementById('sendBtn').disabled = false;
+  document.getElementById('chatInput').focus();
+}
+
+// Fallback simulated replies (when proxy not deployed yet)
+function getSimulatedReply(scenario, text) {
+  const t = text.toLowerCase();
+  if (scenario === 'telecom') {
+    if (t.match(/bill|rechnung|high|hoch/)) return currentLang === 'de'
+      ? 'Hallo! Ich bin Ava von ConnectMobile. Ich verstehe, dass Ihre Rechnung h\u00f6her als erwartet ist. Ich schaue mir das gerne an \u2014 k\u00f6nnen Sie mir Ihre Kundennummer mitteilen? In der Zwischenzeit: Unser Basic-Plan kostet CHF 19.90/Monat (5GB), Smart CHF 34.90 (20GB) und Unlimited CHF 54.90.'
+      : 'Hi! I\'m Ava from ConnectMobile. I understand your bill seems higher than expected. I\'d be happy to look into this \u2014 could you share your customer number? In the meantime: Our Basic plan is CHF 19.90/mo (5GB), Smart is CHF 34.90 (20GB), and Unlimited is CHF 54.90.';
+    if (t.match(/esim|sim|activ|aktivier/)) return currentLang === 'de'
+      ? 'Die eSIM-Aktivierung ist einfach: 1) Gehen Sie zu Einstellungen > Mobilfunk > eSIM hinzuf\u00fcgen. 2) Scannen Sie den QR-Code aus Ihrer Best\u00e4tigungs-Email. 3) Fertig! Falls Sie keine Email erhalten haben, kann ich eine neue senden.'
+      : 'eSIM activation is simple: 1) Go to Settings > Mobile > Add eSIM. 2) Scan the QR code from your confirmation email. 3) Done! If you haven\'t received the email, I can resend it.';
+    return currentLang === 'de'
+      ? 'Hallo! Ich bin Ava von ConnectMobile. Wie kann ich Ihnen heute helfen? Ich kann bei Rechnungen, Tarifwechseln, Netzwerkproblemen und mehr helfen.'
+      : 'Hello! I\'m Ava from ConnectMobile. How can I help you today? I can assist with billing, plan changes, network issues, and more.';
+  }
+  return currentLang === 'de'
+    ? 'Hallo! Ich bin bereit, Ihnen zu helfen. Was kann ich f\u00fcr Sie tun?'
+    : 'Hello! I\'m ready to help. What can I do for you?';
+}
+
+function clearChat() {
+  conversationHistory = [];
+  updateSuggestions();
+}
+
+// Auto-resize input
+document.getElementById('chatInput').addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 80) + 'px';
+});
+
+// ═══════════════════════════════════════
+// MODEL TABLE
+// ═══════════════════════════════════════
+const models = [
+  { name:'Haiku 4.5', provider:'Anthropic', pc:'anthropic', input:'$0.01', output:'$0.05', ctx:'200K', q:3, tier:'budget', best:'High-volume, low-latency', pro:'Cheapest quality model', con:'Limited reasoning' },
+  { name:'Sonnet 4.6', provider:'Anthropic', pc:'anthropic', input:'$0.03', output:'$0.15', ctx:'1M', q:4, tier:'balanced', best:'Production agents, coding', pro:'Best price/quality ratio', con:'Slower than Haiku' },
+  { name:'Opus 4.6', provider:'Anthropic', pc:'anthropic', input:'$0.05', output:'$0.25', ctx:'1M', q:5, tier:'premium', best:'Complex reasoning', pro:'Top-tier intelligence', con:'Higher cost per query' },
+  { name:'GPT-4o-mini', provider:'OpenAI', pc:'openai', input:'$0.15', output:'$0.60', ctx:'128K', q:3, tier:'budget', best:'Simple chatbots', pro:'Good ecosystem', con:'Lower quality' },
+  { name:'GPT-4.1', provider:'OpenAI', pc:'openai', input:'$2.00', output:'$8.00', ctx:'1M', q:5, tier:'premium', best:'Enterprise, large context', pro:'1M context, strong coding', con:'Expensive output' },
+  { name:'o3', provider:'OpenAI', pc:'openai', input:'$2.00', output:'$8.00', ctx:'200K', q:5, tier:'premium', best:'Advanced reasoning', pro:'Strong math/logic', con:'Slow, high latency' },
+  { name:'Gemini 2.5 Flash', provider:'Google', pc:'google', input:'$0.30', output:'$2.50', ctx:'1M', q:3, tier:'budget', best:'Fast multimodal', pro:'Fast, free tier', con:'Inconsistent output' },
+  { name:'Gemini 2.5 Pro', provider:'Google', pc:'google', input:'$1.25', output:'$10.00', ctx:'1M', q:4, tier:'premium', best:'Complex multimodal', pro:'Strong vision', con:'Very expensive output' },
+  { name:'Llama 4 Scout', provider:'Meta', pc:'meta', input:'$0.11', output:'$0.34', ctx:'10M', q:3, tier:'budget', best:'Self-hosted, long ctx', pro:'Open source, 10M ctx', con:'Own infra needed' },
+  { name:'Llama 4 Maverick', provider:'Meta', pc:'meta', input:'$0.50', output:'$0.77', ctx:'128K', q:4, tier:'balanced', best:'Self-hosted production', pro:'Open source, strong', con:'Infra cost hidden' },
+  { name:'DeepSeek V4', provider:'DeepSeek', pc:'deepseek', input:'$0.30', output:'$0.50', ctx:'128K', q:4, tier:'balanced', best:'Cost-efficient coding', pro:'Excellent value', con:'Data sovereignty' },
+  { name:'Mistral Large 3', provider:'Mistral', pc:'mistral', input:'$2.00', output:'$6.00', ctx:'128K', q:4, tier:'premium', best:'EU compliance', pro:'EU data residency', con:'Smaller ecosystem' },
+];
+
+function renderModels(filter) {
+  const tbody = document.getElementById('modelsBody');
+  tbody.innerHTML = '';
+  const filtered = filter === 'all' ? models : models.filter(m => m.tier === filter);
+  filtered.forEach(m => {
+    const dots = Array.from({length:5},(_,i) => {
+      const f = i < m.q;
+      const c = f ? (m.q>=5?'filled-green':m.q>=4?'filled':'filled-amber') : '';
+      return `<div class="quality-dot ${c}"></div>`;
+    }).join('');
+    const ctxCls = parseInt(m.ctx)>=1000?'large':'';
+    const inCls = parseFloat(m.input.replace('$',''))<=0.15?'price-highlight':parseFloat(m.input.replace('$',''))>=2?'price-expensive':'';
+    const outCls = parseFloat(m.output.replace('$',''))<=0.6?'price-highlight':parseFloat(m.output.replace('$',''))>=6?'price-expensive':'';
+    tbody.innerHTML += `<tr>
+      <td><div class="model-name">${escapeHtml(m.name)} <span class="model-provider provider-${m.pc}">${m.provider}</span></div></td>
+      <td class="price-cell ${inCls}">${m.input}</td>
+      <td class="price-cell ${outCls}">${m.output}</td>
+      <td><span class="context-badge ${ctxCls}">${m.ctx}</span></td>
+      <td><div class="quality-bar">${dots}</div></td>
+      <td class="pro-con-cell">${escapeHtml(m.best)}</td>
+      <td class="pro-con-cell"><span class="pro-tag">+</span> ${escapeHtml(m.pro)}<br><span class="con-tag">&minus;</span> ${escapeHtml(m.con)}</td>
+    </tr>`;
+  });
+}
+
+function filterModels(f, btn) {
+  document.querySelectorAll('.model-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderModels(f);
+}
+
+// Init
+renderModels('all');
+updateRateLimit();
+</script>
+</body>
+</html>
