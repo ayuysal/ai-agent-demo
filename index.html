@@ -1206,7 +1206,7 @@ RULES: Max 3 recommendations. Always mention price + key feature. End with quest
 // ═══════════════════════════════════════
 // CONFIG - Replace with your Worker URL after deployment
 // ═══════════════════════════════════════
-const PROXY_URL = 'YOUR_WORKER_URL'; // e.g. https://ai-demo-proxy.your-subdomain.workers.dev
+const PROXY_URL = 'https://ai-demo-proxy.auysal28.workers.dev'; // e.g. https://ai-demo-proxy.your-subdomain.workers.dev
 
 let currentScenario = 'telecom';
 let conversationHistory = [];
@@ -1325,7 +1325,7 @@ async function requestAccess() {
   btn.disabled = true;
 
   try {
-    if (PROXY_URL !== 'YOUR_WORKER_URL') {
+    if (PROXY_URL !== 'https://ai-demo-proxy.auysal28.workers.dev') {
       await fetch(`${PROXY_URL}/lead`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
