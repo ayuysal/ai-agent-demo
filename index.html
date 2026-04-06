@@ -323,7 +323,7 @@ function sid(){let s=localStorage.getItem('ds');if(!s){s='s_'+crypto.randomUUID(
 // ═══ INDUSTRIES ═══
 const I={
   corporate:{
-    logo:'F',co:'FinanceFirst AG',tag:'Digital Banking Assistant',ag:'Banking Assistant',avL:'F',
+    logo:'F',co:'FinanceFirst AG',tag:'Digital Banking Assistant',ag:'Banking Assistant',avL:'F',pubLabel:'New Customer',ssoLabel:'Customer (SSO)',
     theme:{'--bg':'#0f1624','--surface':'#162032','--surface-2':'#1c2940','--surface-3':'#24334d','--border':'#2d3f5c','--text':'#e4e8f0','--text-muted':'#8b9ab8','--text-dim':'#5a6d8a','--accent':'#c9a84c','--accent-soft':'rgba(201,168,76,.12)','--accent-glow':'rgba(201,168,76,.06)','--user-bg':'#1e3054','--agent-bg':'var(--surface-2)','--heading-font':'Georgia,serif','--radius':'10px','--green':'#4ade80','--green-soft':'rgba(74,222,128,.12)','--amber':'#fbbf24','--amber-soft':'rgba(251,191,36,.12)','--red':'#f87171','--red-soft':'rgba(248,113,113,.12)'},
     pubSys:`You are a banking assistant for FinanceFirst AG helping potential new customers. Professional, trustworthy tone.\nFORMATTING: Never use markdown asterisks or bold markers. Use clean structured text. For lists use dashes. For emphasis use CAPS sparingly. Structure: greeting, information, next steps. Keep formal banking tone.\nKNOWLEDGE: Account types (Savings 0.8% APY, Checking free, Premium CHF 9.90/mo), mortgage rates (from 1.4%), credit cards, hours Mon-Fri 8-18h.\nNEVER reveal internal data or account balances. Always respond in English.`,
     ssoSys:`You are a banking assistant for FinanceFirst AG assisting an authenticated customer.\nFORMATTING: Never use markdown asterisks or bold markers. Use clean structured text. For lists use dashes. Structure data clearly with labels. Keep formal banking tone.\nACCOUNT DATA (simulated): Balance CHF 12,450.80. Recent: -CHF 85.00 Migros 03.04, -CHF 1,200.00 Rent 01.04, +CHF 5,800.00 Salary 28.03. Investment portfolio CHF 45,200 (+2.3% YTD). Standing orders: Rent CHF 1,200 on 1st, Insurance CHF 320 on 15th.\nAlways respond in English.`,
@@ -332,7 +332,7 @@ const I={
     ssoFrom:'FinanceFirst Security'
   },
   government:{
-    logo:'ZH',co:'Canton of Zurich',tag:'Digital Citizen Services',ag:'Citizen Service Assistant',avL:'ZH',
+    logo:'ZH',co:'Canton of Zurich',tag:'Digital Citizen Services',ag:'Citizen Service Assistant',avL:'ZH',pubLabel:'General Inquiry',ssoLabel:'Citizen Portal (eID)',
     theme:{'--bg':'#f0f2f5','--surface':'#ffffff','--surface-2':'#f8f9fb','--surface-3':'#eef0f4','--border':'#d1d5db','--text':'#1a1a2e','--text-muted':'#4a4a6a','--text-dim':'#8888a0','--accent':'#003366','--accent-soft':'rgba(0,51,102,.08)','--accent-glow':'rgba(0,51,102,.04)','--green':'#16a34a','--green-soft':'rgba(22,163,74,.1)','--amber':'#d97706','--amber-soft':'rgba(217,119,6,.1)','--red':'#dc2626','--red-soft':'rgba(220,38,38,.1)','--user-bg':'#e0e7f0','--agent-bg':'var(--surface-2)','--heading-font':"-apple-system,sans-serif",'--radius':'8px'},
     pubSys:`You are a digital citizen service assistant for Canton of Zurich. Formal, accurate, helpful.\nFORMATTING: Never use markdown. Write in clear simple language. Use numbered lists for procedures. No decorations. Factual and direct.\nKNOWLEDGE: ID renewal CHF 65 (10 working days), passport CHF 140 (10 days), residence registration, tax deadline March 31, building permits, marriage registration.\nNEVER access personal case data. Always respond in English.`,
     ssoSys:`You are a citizen service assistant for an authenticated resident of Canton of Zurich.\nFORMATTING: Never use markdown. Write clearly. Use numbered lists for procedures. Factual and direct.\nPERSONAL DATA (simulated): Tax status - filed, refund CHF 1,240 pending (est. 6 weeks). Building permit #2024-0847 - approved April 2. Vehicle registration - valid until 2027-03. Residence permit B - valid until 2028-12.\nAlways respond in English.`,
@@ -341,7 +341,7 @@ const I={
     ssoFrom:'Canton of Zurich eGov'
   },
   healthcare:{
-    logo:'M+',co:'MediCare Plus',tag:'Patient Services Portal',ag:'Health Assistant',avL:'M+',
+    logo:'M+',co:'MediCare Plus',tag:'Patient Services Portal',ag:'Health Assistant',avL:'M+',pubLabel:'General Inquiry',ssoLabel:'Patient Portal',
     theme:{'--bg':'#f8fffe','--surface':'#ffffff','--surface-2':'#f0fdf9','--surface-3':'#e6f7f2','--border':'#c6e7dc','--text':'#1a2e28','--text-muted':'#4a6b60','--text-dim':'#88a89c','--accent':'#10b981','--accent-soft':'rgba(16,185,129,.1)','--accent-glow':'rgba(16,185,129,.05)','--green':'#059669','--green-soft':'rgba(5,150,105,.1)','--amber':'#d97706','--amber-soft':'rgba(217,119,6,.1)','--red':'#ef4444','--red-soft':'rgba(239,68,68,.1)','--user-bg':'#d1fae5','--agent-bg':'var(--surface-2)','--heading-font':"'DM Sans',sans-serif",'--radius':'16px'},
     pubSys:`You are a health service assistant for MediCare Plus clinic. Warm, professional, empathetic.\nFORMATTING: Never use markdown asterisks. Use plain text. For important medical values write them clearly on their own line with labels. Structure with line breaks for readability.\nKNOWLEDGE: Specialties - General Medicine, Cardiology, Orthopedics, Dermatology. Hours Mon-Fri 7-19h, Sat 8-12h. Booking: +41 44 123 45 67. Emergency: 144.\nNEVER give medical diagnoses. Always respond in English.`,
     ssoSys:`You are a health assistant for an authenticated patient at MediCare Plus.\nFORMATTING: Never use markdown asterisks. Use plain text. Write medical values clearly on separate lines with labels. Use line breaks for structure.\nPATIENT DATA (simulated): Next appointment - Dr. Weber, Cardiology, April 14 at 10:30. Lab results (March 28) - Cholesterol: 5.2 mmol/L (normal range), Blood sugar: 6.1 mmol/L (slightly elevated), Blood pressure: 128/82 mmHg. Active prescriptions - Metformin 500mg twice daily, Lisinopril 10mg once daily. Insurance - CSS, fully covered.\nAlways respond in English.`,
@@ -387,8 +387,8 @@ function setupInd(){
   document.getElementById('iC').textContent=ind.co;document.getElementById('iT').textContent=ind.tag;
   document.getElementById('iAN').textContent=ind.ag;
   document.getElementById('iAv').textContent=ind.avL;document.getElementById('iAv').style.background=ind.theme['--accent-soft'];document.getElementById('iAv').style.color=ind.theme['--accent'];
-  document.getElementById('aPubTxt').textContent='New Customer';
-  document.getElementById('aSsoTxt').textContent='Customer (SSO)';
+  document.getElementById('aPubTxt').textContent=ind.pubLabel;
+  document.getElementById('aSsoTxt').textContent=ind.ssoLabel;
   document.getElementById('aPublic').className='atb'+(AU==='public'?' act':'');
   document.getElementById('aSSO').className='atb'+(AU==='sso'?' act':'');
   const bdg=document.getElementById('iBdg');bdg.textContent=AU==='public'?'Public':'SSO';bdg.className='cw-badge '+(AU==='public'?'pub':'sso');
