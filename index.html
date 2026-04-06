@@ -207,14 +207,10 @@
     <div class="top-bar-left"><span class="top-logo">AYTEKIN UYSAL</span></div>
     <div class="top-bar-right">
       <div class="vs">
-        <button class="vb active" onclick="go('ent')" id="vEnt">Architektur</button>
+        <button class="vb active" onclick="go('ent')" id="vEnt">Architecture</button>
         <button class="vb" onclick="go('corporate')" id="vCorp">Corporate</button>
-        <button class="vb" onclick="go('government')" id="vGov">Staatlich</button>
-        <button class="vb" onclick="go('healthcare')" id="vHc">Gesundheit</button>
-      </div>
-      <div class="lt">
-        <button class="lb active" onclick="lang('en')">EN</button>
-        <button class="lb" onclick="lang('de')">DE</button>
+        <button class="vb" onclick="go('government')" id="vGov">Government</button>
+        <button class="vb" onclick="go('healthcare')" id="vHc">Healthcare</button>
       </div>
     </div>
   </div>
@@ -277,7 +273,7 @@
   <div id="indView">
     <div class="ind-hdr">
       <div class="ind-brand"><div class="ind-logo" id="iL">F</div><div><h2 id="iC">FinanceFirst AG</h2><span id="iT">Digital Banking Assistant</span></div></div>
-      <div class="ind-auth"><button class="atb act" id="aPublic" onclick="auth('public')"><span id="aPubTxt">Neukunde</span></button><button class="atb" id="aSSO" onclick="auth('sso')"><span id="aSsoTxt">Kunde (SSO)</span></button></div>
+      <div class="ind-auth"><button class="atb act" id="aPublic" onclick="auth('public')"><span id="aPubTxt">New Customer</span></button><button class="atb" id="aSSO" onclick="auth('sso')"><span id="aSsoTxt">Customer (SSO)</span></button></div>
     </div>
     <div class="ind-chat-wrap">
       <div class="cw" id="indCw">
@@ -319,50 +315,47 @@
 
 <script>
 const PX='https://ai-demo-proxy.auysal28.workers.dev';
-let V='ent',L='en',SC='telecom',AU='public',IND='corporate',cEnt=[],cInd=[],load=false,dOn=true,mc=0,aM='hosted';
+let V='ent',SC='telecom',AU='public',IND='corporate',cEnt=[],cInd=[],load=false,dOn=true,mc=0,aM='hosted';
 const MX=20;
 function sid(){let s=localStorage.getItem('ds');if(!s){s='s_'+crypto.randomUUID();localStorage.setItem('ds',s);}return s;}
 
 // ═══ INDUSTRIES ═══
 const I={
   corporate:{
-    logo:'F',co:{en:'FinanceFirst AG',de:'FinanceFirst AG'},tag:{en:'Digital Banking Assistant',de:'Digitaler Banking-Assistent'},
-    ag:{en:'Banking Assistant',de:'Banking-Assistent'},avL:'F',
+    logo:'F',co:'FinanceFirst AG',tag:'Digital Banking Assistant',ag:'Banking Assistant',avL:'F',
     theme:{'--bg':'#0f1624','--surface':'#162032','--surface-2':'#1c2940','--surface-3':'#24334d','--border':'#2d3f5c','--text':'#e4e8f0','--text-muted':'#8b9ab8','--text-dim':'#5a6d8a','--accent':'#c9a84c','--accent-soft':'rgba(201,168,76,.12)','--accent-glow':'rgba(201,168,76,.06)','--user-bg':'#1e3054','--agent-bg':'var(--surface-2)','--heading-font':'Georgia,serif','--radius':'10px','--green':'#4ade80','--green-soft':'rgba(74,222,128,.12)','--amber':'#fbbf24','--amber-soft':'rgba(251,191,36,.12)','--red':'#f87171','--red-soft':'rgba(248,113,113,.12)'},
-    pubSys:`You are a banking assistant for FinanceFirst AG helping potential new customers. Professional, trustworthy tone.\nFORMATTING: Never use markdown asterisks or bold markers. Use clean structured text. For lists use dashes. For emphasis use CAPS sparingly. Structure: greeting, information, next steps. Keep formal banking tone.\nKNOWLEDGE: Account types (Savings 0.8% APY, Checking free, Premium CHF 9.90/mo), mortgage rates (from 1.4%), credit cards, hours Mon-Fri 8-18h.\nNEVER reveal internal data or account balances. Respond in the user's language.`,
-    ssoSys:`You are a banking assistant for FinanceFirst AG assisting an authenticated customer.\nFORMATTING: Never use markdown asterisks or bold markers. Use clean structured text. For lists use dashes. Structure data clearly with labels. Keep formal banking tone.\nACCOUNT DATA (simulated): Balance CHF 12,450.80. Recent: -CHF 85.00 Migros 03.04, -CHF 1,200.00 Rent 01.04, +CHF 5,800.00 Salary 28.03. Investment portfolio CHF 45,200 (+2.3% YTD). Standing orders: Rent CHF 1,200 on 1st, Insurance CHF 320 on 15th.\nRespond in the user's language.`,
-    pubSug:{en:['What account types do you offer?','Current mortgage rates?','How do I open an account?'],de:['Welche Kontoarten bieten Sie an?','Aktuelle Hypothekenzinsen?','Wie eroeffne ich ein Konto?']},
-    ssoSug:{en:['Show my account balance','Recent transactions','My investment performance'],de:['Zeig meinen Kontostand','Letzte Transaktionen','Meine Anlage-Performance']},
-    ssoFrom:{en:'FinanceFirst Security',de:'FinanceFirst Sicherheit'}
+    pubSys:`You are a banking assistant for FinanceFirst AG helping potential new customers. Professional, trustworthy tone.\nFORMATTING: Never use markdown asterisks or bold markers. Use clean structured text. For lists use dashes. For emphasis use CAPS sparingly. Structure: greeting, information, next steps. Keep formal banking tone.\nKNOWLEDGE: Account types (Savings 0.8% APY, Checking free, Premium CHF 9.90/mo), mortgage rates (from 1.4%), credit cards, hours Mon-Fri 8-18h.\nNEVER reveal internal data or account balances. Always respond in English.`,
+    ssoSys:`You are a banking assistant for FinanceFirst AG assisting an authenticated customer.\nFORMATTING: Never use markdown asterisks or bold markers. Use clean structured text. For lists use dashes. Structure data clearly with labels. Keep formal banking tone.\nACCOUNT DATA (simulated): Balance CHF 12,450.80. Recent: -CHF 85.00 Migros 03.04, -CHF 1,200.00 Rent 01.04, +CHF 5,800.00 Salary 28.03. Investment portfolio CHF 45,200 (+2.3% YTD). Standing orders: Rent CHF 1,200 on 1st, Insurance CHF 320 on 15th.\nAlways respond in English.`,
+    pubSug:['What account types do you offer?','Current mortgage rates?','How do I open an account?'],
+    ssoSug:['Show my account balance','Recent transactions','My investment performance'],
+    ssoFrom:'FinanceFirst Security'
   },
   government:{
-    logo:'ZH',co:{en:'Canton of Zurich',de:'Kanton Z\u00fcrich'},tag:{en:'Digital Citizen Services',de:'Digitaler B\u00fcrgerservice'},
-    ag:{en:'Citizen Service Assistant',de:'B\u00fcrgerservice-Assistent'},avL:'ZH',
+    logo:'ZH',co:'Canton of Zurich',tag:'Digital Citizen Services',ag:'Citizen Service Assistant',avL:'ZH',
     theme:{'--bg':'#f0f2f5','--surface':'#ffffff','--surface-2':'#f8f9fb','--surface-3':'#eef0f4','--border':'#d1d5db','--text':'#1a1a2e','--text-muted':'#4a4a6a','--text-dim':'#8888a0','--accent':'#003366','--accent-soft':'rgba(0,51,102,.08)','--accent-glow':'rgba(0,51,102,.04)','--green':'#16a34a','--green-soft':'rgba(22,163,74,.1)','--amber':'#d97706','--amber-soft':'rgba(217,119,6,.1)','--red':'#dc2626','--red-soft':'rgba(220,38,38,.1)','--user-bg':'#e0e7f0','--agent-bg':'var(--surface-2)','--heading-font':"-apple-system,sans-serif",'--radius':'8px'},
-    pubSys:`You are a digital citizen service assistant for Canton of Zurich. Formal, accurate, helpful.\nFORMATTING: Never use markdown. Write in clear simple language. Use numbered lists for procedures. No decorations. Factual and direct.\nKNOWLEDGE: ID renewal CHF 65 (10 working days), passport CHF 140 (10 days), residence registration, tax deadline March 31, building permits, marriage registration.\nNEVER access personal case data. Respond in the user's language.`,
-    ssoSys:`You are a citizen service assistant for an authenticated resident of Canton of Zurich.\nFORMATTING: Never use markdown. Write clearly. Use numbered lists for procedures. Factual and direct.\nPERSONAL DATA (simulated): Tax status - filed, refund CHF 1,240 pending (est. 6 weeks). Building permit #2024-0847 - approved April 2. Vehicle registration - valid until 2027-03. Residence permit B - valid until 2028-12.\nRespond in the user's language.`,
-    pubSug:{en:['How do I renew my ID?','Tax filing deadline?','Building permit process?'],de:['Wie erneuere ich meinen Ausweis?','Steuererklaerungsfrist?','Baubewilligungsverfahren?']},
-    ssoSug:{en:['My tax refund status?','Building permit #2024-0847?','Vehicle registration renewal'],de:['Steuerrueckerstattungs-Status?','Baubewilligung #2024-0847?','Fahrzeugregistrierung erneuern']},
-    ssoFrom:{en:'Canton of Zurich eGov',de:'Kanton Z\u00fcrich eGov'}
+    pubSys:`You are a digital citizen service assistant for Canton of Zurich. Formal, accurate, helpful.\nFORMATTING: Never use markdown. Write in clear simple language. Use numbered lists for procedures. No decorations. Factual and direct.\nKNOWLEDGE: ID renewal CHF 65 (10 working days), passport CHF 140 (10 days), residence registration, tax deadline March 31, building permits, marriage registration.\nNEVER access personal case data. Always respond in English.`,
+    ssoSys:`You are a citizen service assistant for an authenticated resident of Canton of Zurich.\nFORMATTING: Never use markdown. Write clearly. Use numbered lists for procedures. Factual and direct.\nPERSONAL DATA (simulated): Tax status - filed, refund CHF 1,240 pending (est. 6 weeks). Building permit #2024-0847 - approved April 2. Vehicle registration - valid until 2027-03. Residence permit B - valid until 2028-12.\nAlways respond in English.`,
+    pubSug:['How do I renew my ID?','Tax filing deadline?','Building permit process?'],
+    ssoSug:['My tax refund status?','Building permit #2024-0847?','Vehicle registration renewal'],
+    ssoFrom:'Canton of Zurich eGov'
   },
   healthcare:{
-    logo:'M+',co:{en:'MediCare Plus',de:'MediCare Plus'},tag:{en:'Patient Services Portal',de:'Patienten-Serviceportal'},
-    ag:{en:'Health Assistant',de:'Gesundheits-Assistent'},avL:'M+',
+    logo:'M+',co:'MediCare Plus',tag:'Patient Services Portal',ag:'Health Assistant',avL:'M+',
     theme:{'--bg':'#f8fffe','--surface':'#ffffff','--surface-2':'#f0fdf9','--surface-3':'#e6f7f2','--border':'#c6e7dc','--text':'#1a2e28','--text-muted':'#4a6b60','--text-dim':'#88a89c','--accent':'#10b981','--accent-soft':'rgba(16,185,129,.1)','--accent-glow':'rgba(16,185,129,.05)','--green':'#059669','--green-soft':'rgba(5,150,105,.1)','--amber':'#d97706','--amber-soft':'rgba(217,119,6,.1)','--red':'#ef4444','--red-soft':'rgba(239,68,68,.1)','--user-bg':'#d1fae5','--agent-bg':'var(--surface-2)','--heading-font':"'DM Sans',sans-serif",'--radius':'16px'},
-    pubSys:`You are a health service assistant for MediCare Plus clinic. Warm, professional, empathetic.\nFORMATTING: Never use markdown asterisks. Use plain text. For important medical values write them clearly on their own line with labels. Structure with line breaks for readability. Mark important information by writing it clearly, not with asterisks.\nKNOWLEDGE: Specialties - General Medicine, Cardiology, Orthopedics, Dermatology. Hours Mon-Fri 7-19h, Sat 8-12h. Booking: +41 44 123 45 67. Emergency: 144.\nNEVER give medical diagnoses. Respond in the user's language.`,
-    ssoSys:`You are a health assistant for an authenticated patient at MediCare Plus.\nFORMATTING: Never use markdown asterisks. Use plain text. Write medical values clearly on separate lines with labels. Important values should be written plainly. Use line breaks for structure.\nPATIENT DATA (simulated): Next appointment - Dr. Weber, Cardiology, April 14 at 10:30. Lab results (March 28) - Cholesterol: 5.2 mmol/L (normal range), Blood sugar: 6.1 mmol/L (slightly elevated), Blood pressure: 128/82 mmHg. Active prescriptions - Metformin 500mg twice daily, Lisinopril 10mg once daily. Insurance - CSS, fully covered.\nRespond in the user's language.`,
-    pubSug:{en:['What specialties do you offer?','How to book an appointment?','Opening hours?'],de:['Welche Fachgebiete bieten Sie?','Wie buche ich einen Termin?','Sprechzeiten?']},
-    ssoSug:{en:['My next appointment?','Recent lab results?','Active prescriptions?'],de:['Mein naechster Termin?','Aktuelle Laborergebnisse?','Aktive Rezepte?']},
-    ssoFrom:{en:'MediCare Plus Verify',de:'MediCare Plus Verifizierung'}
+    pubSys:`You are a health service assistant for MediCare Plus clinic. Warm, professional, empathetic.\nFORMATTING: Never use markdown asterisks. Use plain text. For important medical values write them clearly on their own line with labels. Structure with line breaks for readability.\nKNOWLEDGE: Specialties - General Medicine, Cardiology, Orthopedics, Dermatology. Hours Mon-Fri 7-19h, Sat 8-12h. Booking: +41 44 123 45 67. Emergency: 144.\nNEVER give medical diagnoses. Always respond in English.`,
+    ssoSys:`You are a health assistant for an authenticated patient at MediCare Plus.\nFORMATTING: Never use markdown asterisks. Use plain text. Write medical values clearly on separate lines with labels. Use line breaks for structure.\nPATIENT DATA (simulated): Next appointment - Dr. Weber, Cardiology, April 14 at 10:30. Lab results (March 28) - Cholesterol: 5.2 mmol/L (normal range), Blood sugar: 6.1 mmol/L (slightly elevated), Blood pressure: 128/82 mmHg. Active prescriptions - Metformin 500mg twice daily, Lisinopril 10mg once daily. Insurance - CSS, fully covered.\nAlways respond in English.`,
+    pubSug:['What specialties do you offer?','How to book an appointment?','Opening hours?'],
+    ssoSug:['My next appointment?','Recent lab results?','Active prescriptions?'],
+    ssoFrom:'MediCare Plus Verify'
   }
 };
 
 // ═══ ENTERPRISE SCENARIOS ═══
 const S={
-  telecom:{name:'Telecom Support Agent',sys:`You are Ava from ConnectMobile (Swiss mobile). Friendly, concise.\nFORMATTING: Never use markdown asterisks or bold markers. Use plain structured text. For lists use dashes.\nPlans: Basic CHF 19.90/5GB, Smart CHF 34.90/20GB, Unlimited CHF 54.90. eSIM: Settings>Mobile>Add eSIM>Scan QR. Roaming: EU in Smart/Unlimited. Never invent account data. 2-4 sentences. Respond in user's language.`,sug:{en:['My bill seems too high','How do I activate eSIM?','Change my plan'],de:['Meine Rechnung ist zu hoch','Wie aktiviere ich eSIM?','Tarif wechseln']},src:['kb','static','api']},
-  saas:{name:'SaaS Onboarding Agent',sys:`You are Max from FlowBoard (project management SaaS). Enthusiastic, step-by-step.\nFORMATTING: Never use markdown asterisks. Use plain text with numbered steps.\nFeatures: Kanban, Gantt, Chat, Integrations. Pricing: Starter free, Pro $12/user/mo. Max 3-4 sentences. Respond in user's language.`,sug:{en:['Just signed up, what first?','Invite my team?','Connect Slack?'],de:['Gerade registriert, was zuerst?','Team einladen?','Slack verbinden?']},src:['kb','web']},
-  ecommerce:{name:'E-Commerce Advisor',sys:`You are Elsa from NordStyle (Scandinavian furniture). Warm, taste-conscious.\nFORMATTING: Never use markdown asterisks. Use plain structured text with dashes for product lists.\nBestsellers: Birch Chair CHF 890, Hygge Sofa CHF 2400, Fjord Lamp CHF 189. Free shipping over CHF 150. 15% off lighting LIGHTUP. Max 3 recs. Respond in user's language.`,sug:{en:['Desk for small office?',"What's trending?",'Under CHF 200?'],de:['Schreibtisch fuers Buero?','Was ist im Trend?','Unter CHF 200?']},src:['kb','static','api','web']},
-  custom:{name:'Custom Agent',sys:'',sug:{en:['What can you do?','Tell me about yourself','How can you help?'],de:['Was kannst du?','Erzaehl ueber dich','Wie kannst du helfen?']},src:['kb']}
+  telecom:{name:'Telecom Support Agent',sys:`You are Ava from ConnectMobile (Swiss mobile). Friendly, concise.\nFORMATTING: Never use markdown asterisks or bold markers. Use plain structured text. For lists use dashes.\nPlans: Basic CHF 19.90/5GB, Smart CHF 34.90/20GB, Unlimited CHF 54.90. eSIM: Settings>Mobile>Add eSIM>Scan QR. Roaming: EU in Smart/Unlimited. Never invent account data. 2-4 sentences. Always respond in English.`,sug:['My bill seems too high','How do I activate eSIM?','Change my plan'],src:['kb','static','api']},
+  saas:{name:'SaaS Onboarding Agent',sys:`You are Max from FlowBoard (project management SaaS). Enthusiastic, step-by-step.\nFORMATTING: Never use markdown asterisks. Use plain text with numbered steps.\nFeatures: Kanban, Gantt, Chat, Integrations. Pricing: Starter free, Pro $12/user/mo. Max 3-4 sentences. Always respond in English.`,sug:['Just signed up, what first?','Invite my team?','Connect Slack?'],src:['kb','web']},
+  ecommerce:{name:'E-Commerce Advisor',sys:`You are Elsa from NordStyle (Scandinavian furniture). Warm, taste-conscious.\nFORMATTING: Never use markdown asterisks. Use plain structured text with dashes for product lists.\nBestsellers: Birch Chair CHF 890, Hygge Sofa CHF 2400, Fjord Lamp CHF 189. Free shipping over CHF 150. 15% off lighting LIGHTUP. Max 3 recs. Always respond in English.`,sug:['Desk for small office?',"What's trending?",'Under CHF 200?'],src:['kb','static','api','web']},
+  custom:{name:'Custom Agent',sys:'',sug:['What can you do?','Tell me about yourself','How can you help?'],src:['kb']}
 };
 
 // ═══ VIEW SWITCH ═══
@@ -390,15 +383,15 @@ function go(v){
 function setupInd(){
   const ind=I[IND];
   document.getElementById('iL').textContent=ind.logo;document.getElementById('iL').style.background=ind.theme['--accent-soft'];document.getElementById('iL').style.color=ind.theme['--accent'];
-  document.getElementById('iC').textContent=ind.co[L];document.getElementById('iT').textContent=ind.tag[L];
-  document.getElementById('iAN').textContent=ind.ag[L];
+  document.getElementById('iC').textContent=ind.co;document.getElementById('iT').textContent=ind.tag;
+  document.getElementById('iAN').textContent=ind.ag;
   document.getElementById('iAv').textContent=ind.avL;document.getElementById('iAv').style.background=ind.theme['--accent-soft'];document.getElementById('iAv').style.color=ind.theme['--accent'];
-  document.getElementById('aPubTxt').textContent=L==='de'?'Neukunde':'New Customer';
-  document.getElementById('aSsoTxt').textContent=L==='de'?'Kunde (SSO)':'Customer (SSO)';
+  document.getElementById('aPubTxt').textContent='New Customer';
+  document.getElementById('aSsoTxt').textContent='Customer (SSO)';
   document.getElementById('aPublic').className='atb'+(AU==='public'?' act':'');
   document.getElementById('aSSO').className='atb'+(AU==='sso'?' act':'');
   const bdg=document.getElementById('iBdg');bdg.textContent=AU==='public'?'Public':'SSO';bdg.className='cw-badge '+(AU==='public'?'pub':'sso');
-  document.getElementById('indI').placeholder=L==='de'?'Ihre Frage...':'Your question...';
+  document.getElementById('indI').placeholder='Your question...';
   cInd=[];wel('ind');
 }
 
@@ -414,16 +407,19 @@ function genCode(){return String(Math.floor(1000+Math.random()*9000));}
 function showSSO(){
   ssoCurrentCode=genCode();
   const ind=I[IND];
-  document.getElementById('ssoLogo').textContent=ind.logo;document.getElementById('ssoLogo').style.background=ind.theme['--accent-soft'];document.getElementById('ssoLogo').style.color=ind.theme['--accent'];
-  document.getElementById('ssoTitle').textContent=L==='de'?'Sicherer Login':'Secure Login';
-  document.getElementById('ssoUser').placeholder=L==='de'?'Kundennummer':'Customer ID';
-  document.getElementById('ssoPw').placeholder=L==='de'?'Passwort':'Password';
-  document.getElementById('ssoHint').innerHTML=`<strong>${L==='de'?'Testzugangsdaten':'Test credentials'}:</strong><br>ID: <strong>100-200-300</strong><br>${L==='de'?'Passwort':'Password'}: <strong>demo2026</strong>`;
-  document.getElementById('ssoLoginBtn').textContent=L==='de'?'Anmelden':'Sign In';
+  if(ind){document.getElementById('ssoLogo').textContent=ind.logo;document.getElementById('ssoLogo').style.background=ind.theme['--accent-soft'];document.getElementById('ssoLogo').style.color=ind.theme['--accent'];}
+  else{document.getElementById('ssoLogo').textContent='A';document.getElementById('ssoLogo').style.background='var(--accent-soft)';document.getElementById('ssoLogo').style.color='var(--accent)';}
+  document.getElementById('ssoTitle').textContent='Secure Login';
+  document.getElementById('ssoUser').placeholder='Customer ID';
+  document.getElementById('ssoPw').placeholder='Password';
+  document.getElementById('ssoHint').innerHTML='<strong>Test credentials:</strong><br>ID: <strong>100-200-300</strong><br>Password: <strong>demo2026</strong>';
+  document.getElementById('ssoLoginBtn').textContent='Sign In';
   document.getElementById('ssoStep1').style.display='block';document.getElementById('ssoStep2').style.display='none';
   document.getElementById('ssoUser').value='';document.getElementById('ssoPw').value='';document.getElementById('ssoCode').value='';
   document.getElementById('ssoErr1').className='sso-err';document.getElementById('ssoErr2').className='sso-err';
   document.getElementById('ssoOv').classList.add('vis');
+  // Auto-submit on Enter in password field
+  document.getElementById('ssoPw').onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();ssoLogin();}};
 }
 
 function closeSSO(){document.getElementById('ssoOv').classList.remove('vis');}
@@ -432,25 +428,28 @@ function ssoLogin(){
   const u=document.getElementById('ssoUser').value.trim();
   const p=document.getElementById('ssoPw').value.trim();
   const err=document.getElementById('ssoErr1');
-  if(!u||!p){err.textContent=L==='de'?'Bitte alle Felder ausfuellen.':'Please fill in all fields.';err.className='sso-err vis';return;}
-  if(u!=='100-200-300'||p!=='demo2026'){err.textContent=L==='de'?'Ungueltige Zugangsdaten.':'Invalid credentials.';err.className='sso-err vis';return;}
+  if(!u||!p){err.textContent='Please fill in all fields.';err.className='sso-err vis';return;}
+  if(u!=='100-200-300'||p!=='demo2026'){err.textContent='Invalid credentials.';err.className='sso-err vis';return;}
   err.className='sso-err';
   ssoCurrentCode=genCode();
   document.getElementById('ssoStep1').style.display='none';document.getElementById('ssoStep2').style.display='block';
-  const fromName=V==='ent'?'Demo Security':(I[IND]?I[IND].ssoFrom[L]:'Security');
-  document.getElementById('ssoSmsLabel').textContent=L==='de'?'Verifizierungscode an Ihr Geraet gesendet':'Verification code sent to your device';
+  const fromName=V==='ent'?'Demo Security':(I[IND]?I[IND].ssoFrom:'Security');
+  document.getElementById('ssoSmsLabel').textContent='Verification code sent to your device';
   document.getElementById('ssoSmsFrom').textContent=fromName;
-  document.getElementById('ssoSmsBody').textContent=L==='de'?'Ihr Verifizierungscode:':'Your verification code:';
+  document.getElementById('ssoSmsBody').textContent='Your verification code:';
   document.getElementById('ssoCodeDisplay').textContent=ssoCurrentCode;
-  document.getElementById('ssoCodeHint').innerHTML=`<strong>${L==='de'?'Testcode':'Test code'}: ${ssoCurrentCode}</strong>`;
-  document.getElementById('ssoVerifyBtn').textContent=L==='de'?'Bestaetigen':'Verify';
+  document.getElementById('ssoCodeHint').innerHTML=`<strong>Test code: ${ssoCurrentCode}</strong>`;
+  document.getElementById('ssoVerifyBtn').textContent='Verify';
+  // Auto-verify when 4 digits entered correctly
+  const codeInput=document.getElementById('ssoCode');
+  codeInput.focus();
+  codeInput.oninput=function(){if(this.value.length===4){if(this.value===ssoCurrentCode){ssoVerify();}else{document.getElementById('ssoErr2').textContent='Invalid code.';document.getElementById('ssoErr2').className='sso-err vis';}}};
 }
 
 function ssoVerify(){
   const c=document.getElementById('ssoCode').value.trim();
-  const err=document.getElementById('ssoErr2');
-  if(!c){err.textContent=L==='de'?'Bitte Code eingeben.':'Please enter the code.';err.className='sso-err vis';return;}
-  if(c!==ssoCurrentCode){err.textContent=L==='de'?'Ungueltiger Code.':'Invalid code.';err.className='sso-err vis';return;}
+  if(!c){return;}
+  if(c!==ssoCurrentCode){document.getElementById('ssoErr2').textContent='Invalid code.';document.getElementById('ssoErr2').className='sso-err vis';return;}
   document.getElementById('ssoOv').classList.remove('vis');
   AU='sso';
   if(V==='ent'){entSSO=true;document.getElementById('entBdg').textContent='SSO';document.getElementById('entBdg').className='cw-badge sso';document.getElementById('entAuthBtn').textContent='Logout';clr('ent');}
@@ -458,18 +457,7 @@ function ssoVerify(){
 }
 
 // ═══ LANG ═══
-function lang(l){
-  L=l;document.querySelectorAll('.lb').forEach(b=>b.classList.toggle('active',b.textContent===l.toUpperCase()));
-  // Always update enterprise texts
-  document.getElementById('hBadge').textContent=l==='de'?'Live AI-Agent Demo':'Live AI Agent Demo';
-  document.getElementById('hTitle').textContent=l==='de'?'AI-Agent Architektur':'AI Agent Architecture';
-  document.getElementById('hDesc').textContent=l==='de'?'Sehen Sie wie ein produktionsreifer AI-Agent Daten routet, Antworten validiert und Halluzinationen verhindert. Waehlen Sie ein Szenario und testen Sie live.':'See how a production-grade AI agent routes data, validates responses, and prevents hallucinations. Choose a scenario and test it live.';
-  document.getElementById('gT').textContent=l==='de'?'Vollstaendige Architektur freischalten':'Unlock Full Architecture View';
-  document.getElementById('gD').textContent=l==='de'?'Datenpipeline, Sicherheitsebenen und Validierungs-Engine einsehen. Email fuer Zugang eingeben.':'See the complete data pipeline, security layers, and validation engine. Enter your email for access.';
-  document.getElementById('gB').textContent=l==='de'?'Zugang erhalten':'Get Access';
-  document.getElementById('entI').placeholder=l==='de'?'Ihre Nachricht...':'Type your message...';
-  if(V==='ent'){wel('ent');}else{setupInd();}
-}
+// lang() removed - EN only
 
 // ═══ CHAT ENGINE ═══
 function esc(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML;}
@@ -483,10 +471,10 @@ function hideT(tg){const e=document.getElementById(tg+'T');if(e)e.remove();}
 function wel(tg){
   const ms=document.getElementById(tg+'M');ms.innerHTML='';
   let sg=[];
-  if(tg==='ent'){sg=S[SC].sug[L]||S[SC].sug.en;}
-  else{const ind=I[IND];sg=AU==='public'?(ind.pubSug[L]||ind.pubSug.en):(ind.ssoSug[L]||ind.ssoSug.en);}
+  if(tg==='ent'){sg=S[SC].sug;}
+  else{const ind=I[IND];sg=AU==='public'?ind.pubSug:ind.ssoSug;}
   const w=document.createElement('div');w.className='welcome';
-  w.innerHTML=`<h3>${L==='de'?'Starten Sie ein Gespraech':'Start a conversation'}</h3><p>${L==='de'?'Nachricht eingeben oder Vorschlag waehlen.':'Type a message or pick a suggestion.'}</p><div class="sgc">${sg.map(s=>`<div class="sg" onclick="sgC('${tg}',this)">${esc(s)}</div>`).join('')}</div>`;
+  w.innerHTML=`<h3>Start a conversation</h3><p>Type a message or pick a suggestion.</p><div class="sgc">${sg.map(s=>`<div class="sg" onclick="sgC('${tg}',this)">${esc(s)}</div>`).join('')}</div>`;
   ms.appendChild(w);
 }
 
@@ -527,24 +515,13 @@ async function send(tg){
 let entSSO=false;
 function entAuth(){
   if(entSSO){entSSO=false;document.getElementById('entBdg').textContent='Public';document.getElementById('entBdg').className='cw-badge pub';document.getElementById('entAuthBtn').textContent='SSO';clr('ent');return;}
-  // Show SSO modal for enterprise view
-  ssoCurrentCode=genCode();
-  document.getElementById('ssoLogo').textContent='A';document.getElementById('ssoLogo').style.background='var(--accent-soft)';document.getElementById('ssoLogo').style.color='var(--accent)';
-  document.getElementById('ssoTitle').textContent=L==='de'?'Sicherer Login':'Secure Login';
-  document.getElementById('ssoUser').placeholder=L==='de'?'Kundennummer':'Customer ID';
-  document.getElementById('ssoPw').placeholder=L==='de'?'Passwort':'Password';
-  document.getElementById('ssoHint').innerHTML=`<strong>${L==='de'?'Testzugangsdaten':'Test credentials'}:</strong><br>ID: <strong>100-200-300</strong><br>${L==='de'?'Passwort':'Password'}: <strong>demo2026</strong>`;
-  document.getElementById('ssoLoginBtn').textContent=L==='de'?'Anmelden':'Sign In';
-  document.getElementById('ssoStep1').style.display='block';document.getElementById('ssoStep2').style.display='none';
-  document.getElementById('ssoUser').value='';document.getElementById('ssoPw').value='';document.getElementById('ssoCode').value='';
-  document.getElementById('ssoErr1').className='sso-err';document.getElementById('ssoErr2').className='sso-err';
-  document.getElementById('ssoOv').classList.add('vis');
+  showSSO();
 }
 function togDemo(){dOn=!dOn;document.getElementById('sDot').className='sd '+(dOn?'a':'p');document.getElementById('sTxt').textContent=dOn?'Demo Active':'Paused';document.getElementById('tBtn').textContent=dOn?'Deactivate':'Reactivate';document.getElementById('tBtn').className='db '+(dOn?'dng':'pri');document.getElementById('entCw').classList.toggle('chat-off',!dOn);}
 function togBk(){document.getElementById('bkA').classList.toggle('vis');}
 function actBk(){if(document.getElementById('bkI').value.trim().startsWith('sk-ant-')){aM='byok';document.getElementById('bkA').classList.remove('vis');addM('ent','BYOK active','sys');}}
 function updR(){document.getElementById('rLim').textContent=`${MX-mc}/${MX}`;}
-async function reqAcc(){const e=document.getElementById('gE').value.trim();if(!e||!e.includes('@'))return;try{await fetch(`${PX}/lead`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e})});}catch(x){}document.getElementById('eGate').innerHTML='<div style="font-size:24px;color:var(--green)">&#10003;</div><h3 style="color:var(--green)">'+(L==='de'?'Zugang freigeschaltet':'Access unlocked')+'</h3><p style="font-size:12px;color:var(--text-muted);margin-top:8px">'+(L==='de'?'Die vollstaendige Architektur-Dokumentation wird Ihnen zugestellt.':'Full architecture documentation will be delivered to you.')+'</p>';}
+async function reqAcc(){const e=document.getElementById('gE').value.trim();if(!e||!e.includes('@'))return;try{await fetch(`${PX}/lead`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e})});}catch(x){}document.getElementById('eGate').innerHTML='<div style="font-size:24px;color:var(--green)">&#10003;</div><h3 style="color:var(--green)">Access unlocked</h3><p style="font-size:12px;color:var(--text-muted);margin-top:8px">Full architecture documentation will be delivered to you.</p>';}
 document.querySelectorAll('.sc').forEach(c=>{c.addEventListener('click',()=>{const s=c.dataset.sc;document.querySelectorAll('.sc').forEach(x=>x.classList.remove('act'));c.classList.add('act');if(s==='custom'){document.getElementById('cArea').classList.add('vis');return;}document.getElementById('cArea').classList.remove('vis');SC=s;cEnt=[];document.getElementById('eAN').textContent=S[s].name;wel('ent');});});
 function apCust(){const p=document.getElementById('cPr').value.trim();if(!p)return;S.custom.sys=p;SC='custom';cEnt=[];document.getElementById('eAN').textContent='Custom Agent';wel('ent');}
 function clr(tg){if(tg==='ent')cEnt=[];else cInd=[];wel(tg);}
@@ -559,24 +536,24 @@ rM('all');updR();wel('ent');
 // ═══ TEST PDF FILES ═══
 const testPDFs={
   ent:[
-    {name:'product-catalog.pdf',desc:{en:'Product Catalog 2026',de:'Produktkatalog 2026'}},
-    {name:'support-policy.pdf',desc:{en:'Support Policy',de:'Support-Richtlinien'}},
-    {name:'api-documentation.pdf',desc:{en:'API Documentation',de:'API-Dokumentation'}},
+    {name:'product-catalog-2026.pdf',desc:'Product Catalog 2026'},
+    {name:'support-policy.pdf',desc:'Support Policy'},
+    {name:'api-documentation.pdf',desc:'API Documentation'},
   ],
   corporate:[
-    {name:'kontoeroeffnung-antrag.pdf',desc:{en:'Account Opening Form',de:'Kontoeroeffnungs-Antrag'}},
-    {name:'hypothekenrechner.pdf',desc:{en:'Mortgage Calculator',de:'Hypothekenrechner'}},
-    {name:'agb-finanzdienstleistungen.pdf',desc:{en:'Terms & Conditions',de:'AGB Finanzdienstleistungen'}},
+    {name:'account-opening-form.pdf',desc:'Account Opening Form'},
+    {name:'mortgage-calculator.pdf',desc:'Mortgage Calculator'},
+    {name:'terms-and-conditions.pdf',desc:'Terms & Conditions'},
   ],
   government:[
-    {name:'id-erneuerung-formular.pdf',desc:{en:'ID Renewal Form',de:'Ausweis-Erneuerung Formular'}},
-    {name:'steuererklaerung-anleitung.pdf',desc:{en:'Tax Filing Guide',de:'Steuererklaerung Anleitung'}},
-    {name:'baubewilligung-checkliste.pdf',desc:{en:'Building Permit Checklist',de:'Baubewilligungs-Checkliste'}},
+    {name:'id-renewal-form.pdf',desc:'ID Renewal Form'},
+    {name:'tax-filing-guide.pdf',desc:'Tax Filing Guide'},
+    {name:'building-permit-checklist.pdf',desc:'Building Permit Checklist'},
   ],
   healthcare:[
-    {name:'patientenaufnahme.pdf',desc:{en:'Patient Intake Form',de:'Patientenaufnahme-Formular'}},
-    {name:'versicherungsnachweis.pdf',desc:{en:'Insurance Verification',de:'Versicherungsnachweis'}},
-    {name:'laborergebnisse-muster.pdf',desc:{en:'Sample Lab Results',de:'Laborergebnisse Muster'}},
+    {name:'patient-intake-form.pdf',desc:'Patient Intake Form'},
+    {name:'insurance-verification.pdf',desc:'Insurance Verification'},
+    {name:'sample-lab-results.pdf',desc:'Sample Lab Results'},
   ]
 };
 
@@ -586,9 +563,9 @@ function renderTestFiles(target,key){
   const list=document.getElementById(target+'FileList');
   const label=document.getElementById(target+'FilesLabel');
   if(!list)return;
-  label.textContent=L==='de'?'Test-Dokumente (Drag & Drop oder klicken)':'Test Documents (Drag & drop or click)';
+  label.textContent='Test Documents (Drag & drop or click)';
   const files=testPDFs[key]||testPDFs.ent;
-  list.innerHTML=files.map(f=>`<div class="test-file" onclick="useTestFile('${target}','${f.name}')">${pdfSvg}<span>${f.desc[L]||f.desc.en}</span></div>`).join('');
+  list.innerHTML=files.map(f=>`<div class="test-file" onclick="useTestFile('${target}','${f.name}')">${pdfSvg}<span>${f.desc}</span></div>`).join('');
 }
 
 function useTestFile(target,name){
