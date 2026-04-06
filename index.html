@@ -73,8 +73,8 @@
   .sh:hover{background:var(--surface-2)}
   .si{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
   .sti{flex:1}.sti h4{font-size:11px;font-weight:600}.sti span{font-size:9px;color:var(--text-dim)}
-  .sv{color:var(--text-dim);font-size:9px;transition:transform .2s}.sk.o .sv{transform:rotate(90deg)}
-  .sy{max-height:0;overflow:hidden;transition:max-height .3s}.sk.o .sy{max-height:300px}
+  .sv{display:none}
+  .sy{max-height:none;overflow:visible}
   .sx{padding:0 12px 12px;font-size:10px;color:var(--text-muted);line-height:1.7}
   .sx ul{list-style:none;padding:0}.sx li{padding:2px 0 2px 14px;position:relative}
   .sx li::before{content:'';position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:2px}
@@ -154,6 +154,16 @@
   .sgc{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:8px}
   .sg{padding:6px 12px;background:var(--surface-3);border:1px solid var(--border);border-radius:100px;font-size:11px;color:var(--text-muted);cursor:pointer;font-family:var(--sans);transition:all .2s}
   .sg:hover{border-color:var(--accent);color:var(--text);background:var(--accent-soft)}
+  /* Test files area */
+  .test-files{margin-top:12px;padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+  .test-files-label{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-dim);margin-bottom:8px}
+  .test-file-list{display:flex;flex-wrap:wrap;gap:8px}
+  .test-file{display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .2s;font-size:11px;color:var(--text-muted)}
+  .test-file:hover{border-color:var(--accent);color:var(--text)}
+  .test-file svg{width:16px;height:16px;color:var(--red);flex-shrink:0}
+  .test-file span{font-family:var(--mono);font-size:10px}
+  /* Drag & drop highlight */
+  .cw-in.dragover textarea{border-color:var(--accent);background:var(--accent-soft)}
   .demo-footer{text-align:center;padding:16px 0 36px;font-size:10px;color:var(--text-dim);font-family:var(--mono)}
   .demo-footer a{color:var(--accent);text-decoration:none}
 
@@ -248,15 +258,16 @@
       <div class="cw" id="entCw">
         <div class="cw-h"><div class="cw-av" style="background:var(--accent-soft);color:var(--accent)">A</div><div class="cw-nfo"><h4 id="eAN">Telecom Support Agent</h4><span>Online</span></div><div style="margin-left:auto;display:flex;align-items:center;gap:6px"><span class="cw-badge pub" id="entBdg">Public</span><button class="db" onclick="entAuth()" style="font-size:10px;padding:4px 10px" id="entAuthBtn">SSO</button><button class="db" onclick="clr('ent')" style="font-size:10px;padding:4px 10px">Clear</button></div></div>
         <div class="cw-msg" id="entM"></div>
-        <div class="cw-in"><div class="att-pill" id="entAtt"><span id="entAttN"></span><span class="att-x" onclick="rmAtt('ent')">x</span></div><textarea id="entI" placeholder="Type your message..." rows="1" onkeydown="hk(event,'ent')"></textarea><button class="att-btn" onclick="pickF('ent')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg></button><button class="snd" id="entS" onclick="send('ent')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></div>
+        <div class="cw-in" id="entDrop"><div class="att-pill" id="entAtt"><span id="entAttN"></span><span class="att-x" onclick="rmAtt('ent')">x</span></div><textarea id="entI" placeholder="Type your message..." rows="1" onkeydown="hk(event,'ent')"></textarea><button class="att-btn" onclick="pickF('ent')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg></button><button class="snd" id="entS" onclick="send('ent')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></div>
       </div>
+      <div class="test-files" id="entFiles"><div class="test-files-label" id="entFilesLabel">Test Documents</div><div class="test-file-list" id="entFileList"></div></div>
       <div class="sp">
         <div class="spl">Security & Engine</div>
-        <div class="sk"><div class="sh" onclick="this.closest('.sk').classList.toggle('o')"><div class="si" style="background:var(--red-soft)">S</div><div class="sti"><h4>Hallucination Prevention</h4><span>Static Data Engine</span></div><span class="sv">&#9654;</span></div><div class="sy"><div class="sx"><ul><li class="br">Critical facts never LLM-generated - injected from verified sources</li><li class="bg">Immutable reference layer cannot be overridden</li><li class="ba">Response cross-validation against source-of-truth</li></ul></div></div></div>
-        <div class="sk"><div class="sh" onclick="this.closest('.sk').classList.toggle('o')"><div class="si" style="background:var(--accent-soft)">D</div><div class="sti"><h4>Data Separation</h4><span>Isolated Pipelines</span></div><span class="sv">&#9654;</span></div><div class="sy"><div class="sx"><ul><li class="bg">KB, Web, Static flow through isolated pipelines</li><li class="ba">External data sanitized before LLM context</li><li class="bb">Source attribution on every response</li></ul></div></div></div>
-        <div class="sk"><div class="sh" onclick="this.closest('.sk').classList.toggle('o')"><div class="si" style="background:var(--amber-soft)">A</div><div class="sti"><h4>Auth & Access Tiers</h4><span>Public / SSO / RBAC</span></div><span class="sv">&#9654;</span></div><div class="sy"><div class="sx"><ul><li class="bg">Public: KB, FAQs - no auth</li><li class="ba">SSO: Internal docs, customer data</li><li class="br">RBAC: Admin data with role verification</li></ul></div></div></div>
-        <div class="sk"><div class="sh" onclick="this.closest('.sk').classList.toggle('o')"><div class="si" style="background:var(--green-soft)">P</div><div class="sti"><h4>Prompt Security</h4><span>Guardrails</span></div><span class="sv">&#9654;</span></div><div class="sy"><div class="sx"><ul><li class="br">Hard boundaries on forbidden actions</li><li class="bg">Immutable security templates</li><li class="bb">Injection-resistant architecture</li></ul></div></div></div>
-        <div class="sk"><div class="sh" onclick="this.closest('.sk').classList.toggle('o')"><div class="si" style="background:var(--purple-soft)">V</div><div class="sti"><h4>Validation Engine</h4><span>Pre-delivery</span></div><span class="sv">&#9654;</span></div><div class="sy"><div class="sx"><ul><li class="br">Output checked against reference data</li><li class="ba">Web claims flagged with confidence</li><li class="bg">Critical data must match or blocked</li></ul></div></div></div>
+        <div class="sk"><div class="sh" ><div class="si" style="background:var(--red-soft)">S</div><div class="sti"><h4>Hallucination Prevention</h4><span>Static Data Engine</span></div><span class="sv">&#9654;</span></div><div class="sy"><div class="sx"><ul><li class="br">Critical facts never LLM-generated - injected from verified sources</li><li class="bg">Immutable reference layer cannot be overridden</li><li class="ba">Response cross-validation against source-of-truth</li></ul></div></div></div>
+        <div class="sk"><div class="sh" ><div class="si" style="background:var(--accent-soft)">D</div><div class="sti"><h4>Data Separation</h4><span>Isolated Pipelines</span></div><span class="sv">&#9654;</span></div><div class="sy"><div class="sx"><ul><li class="bg">KB, Web, Static flow through isolated pipelines</li><li class="ba">External data sanitized before LLM context</li><li class="bb">Source attribution on every response</li></ul></div></div></div>
+        <div class="sk"><div class="sh" ><div class="si" style="background:var(--amber-soft)">A</div><div class="sti"><h4>Auth & Access Tiers</h4><span>Public / SSO / RBAC</span></div><span class="sv">&#9654;</span></div><div class="sy"><div class="sx"><ul><li class="bg">Public: KB, FAQs - no auth</li><li class="ba">SSO: Internal docs, customer data</li><li class="br">RBAC: Admin data with role verification</li></ul></div></div></div>
+        <div class="sk"><div class="sh" ><div class="si" style="background:var(--green-soft)">P</div><div class="sti"><h4>Prompt Security</h4><span>Guardrails</span></div><span class="sv">&#9654;</span></div><div class="sy"><div class="sx"><ul><li class="br">Hard boundaries on forbidden actions</li><li class="bg">Immutable security templates</li><li class="bb">Injection-resistant architecture</li></ul></div></div></div>
+        <div class="sk"><div class="sh" ><div class="si" style="background:var(--purple-soft)">V</div><div class="sti"><h4>Validation Engine</h4><span>Pre-delivery</span></div><span class="sv">&#9654;</span></div><div class="sy"><div class="sx"><ul><li class="br">Output checked against reference data</li><li class="ba">Web claims flagged with confidence</li><li class="bg">Critical data must match or blocked</li></ul></div></div></div>
       </div>
     </div>
     <div class="ms"><div class="mc"><div class="mh"><div><h3>LLM Model Landscape</h3><span>Pricing & Quality</span></div><div class="mfl"><button class="mfb act" onclick="fM('all',this)">All</button><button class="mfb" onclick="fM('budget',this)">Budget</button><button class="mfb" onclick="fM('balanced',this)">Balanced</button><button class="mfb" onclick="fM('premium',this)">Premium</button></div></div><div class="mtw"><table class="mt2"><thead><tr><th>Model</th><th>Input/1M</th><th>Output/1M</th><th>Context</th><th>Quality</th><th>Best For</th><th>Trade-off</th></tr></thead><tbody id="mB"></tbody></table></div><div class="mn3">Prices Q2 2026. Caching & batch discounts (50-90%) not shown.</div></div></div>
@@ -272,8 +283,9 @@
       <div class="cw" id="indCw">
         <div class="cw-h"><div class="cw-av" id="iAv">F</div><div class="cw-nfo"><h4 id="iAN">Banking Assistant</h4><span>Online</span></div><span class="cw-badge pub" id="iBdg">Public</span><button class="db" onclick="clr('ind')" style="margin-left:8px;font-size:10px;padding:4px 10px">Clear</button></div>
         <div class="cw-msg" id="indM"></div>
-        <div class="cw-in"><div class="att-pill" id="indAtt"><span id="indAttN"></span><span class="att-x" onclick="rmAtt('ind')">x</span></div><textarea id="indI" placeholder="Your question..." rows="1" onkeydown="hk(event,'ind')"></textarea><button class="att-btn" onclick="pickF('ind')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg></button><button class="snd" id="indS" onclick="send('ind')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></div>
+        <div class="cw-in" id="indDrop"><div class="att-pill" id="indAtt"><span id="indAttN"></span><span class="att-x" onclick="rmAtt('ind')">x</span></div><textarea id="indI" placeholder="Your question..." rows="1" onkeydown="hk(event,'ind')"></textarea><button class="att-btn" onclick="pickF('ind')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg></button><button class="snd" id="indS" onclick="send('ind')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></div>
       </div>
+      <div class="test-files" id="indFiles"><div class="test-files-label" id="indFilesLabel">Test Documents</div><div class="test-file-list" id="indFileList"></div></div>
     </div>
   </div>
 
@@ -425,9 +437,9 @@ function ssoLogin(){
   err.className='sso-err';
   ssoCurrentCode=genCode();
   document.getElementById('ssoStep1').style.display='none';document.getElementById('ssoStep2').style.display='block';
-  const ind=I[IND];
+  const fromName=V==='ent'?'Demo Security':(I[IND]?I[IND].ssoFrom[L]:'Security');
   document.getElementById('ssoSmsLabel').textContent=L==='de'?'Verifizierungscode an Ihr Geraet gesendet':'Verification code sent to your device';
-  document.getElementById('ssoSmsFrom').textContent=ind.ssoFrom[L];
+  document.getElementById('ssoSmsFrom').textContent=fromName;
   document.getElementById('ssoSmsBody').textContent=L==='de'?'Ihr Verifizierungscode:':'Your verification code:';
   document.getElementById('ssoCodeDisplay').textContent=ssoCurrentCode;
   document.getElementById('ssoCodeHint').innerHTML=`<strong>${L==='de'?'Testcode':'Test code'}: ${ssoCurrentCode}</strong>`;
@@ -448,16 +460,15 @@ function ssoVerify(){
 // ═══ LANG ═══
 function lang(l){
   L=l;document.querySelectorAll('.lb').forEach(b=>b.classList.toggle('active',b.textContent===l.toUpperCase()));
-  if(V==='ent'){
-    document.getElementById('hBadge').textContent=l==='de'?'Live AI-Agent Demo':'Live AI Agent Demo';
-    document.getElementById('hTitle').textContent=l==='de'?'AI-Agent Architektur':'AI Agent Architecture';
-    document.getElementById('hDesc').textContent=l==='de'?'Sehen Sie wie ein produktionsreifer AI-Agent Daten routet, Antworten validiert und Halluzinationen verhindert. Waehlen Sie ein Szenario und testen Sie live.':'See how a production-grade AI agent routes data, validates responses, and prevents hallucinations. Choose a scenario and test it live.';
-    document.getElementById('gT').textContent=l==='de'?'Vollstaendige Architektur freischalten':'Unlock Full Architecture View';
-    document.getElementById('gD').textContent=l==='de'?'Datenpipeline, Sicherheitsebenen und Validierungs-Engine einsehen. Email fuer Zugang eingeben.':'See the complete data pipeline, security layers, and validation engine. Enter your email for access.';
-    document.getElementById('gB').textContent=l==='de'?'Zugang erhalten':'Get Access';
-    document.getElementById('entI').placeholder=l==='de'?'Ihre Nachricht...':'Type your message...';
-    wel('ent');
-  } else { setupInd(); }
+  // Always update enterprise texts
+  document.getElementById('hBadge').textContent=l==='de'?'Live AI-Agent Demo':'Live AI Agent Demo';
+  document.getElementById('hTitle').textContent=l==='de'?'AI-Agent Architektur':'AI Agent Architecture';
+  document.getElementById('hDesc').textContent=l==='de'?'Sehen Sie wie ein produktionsreifer AI-Agent Daten routet, Antworten validiert und Halluzinationen verhindert. Waehlen Sie ein Szenario und testen Sie live.':'See how a production-grade AI agent routes data, validates responses, and prevents hallucinations. Choose a scenario and test it live.';
+  document.getElementById('gT').textContent=l==='de'?'Vollstaendige Architektur freischalten':'Unlock Full Architecture View';
+  document.getElementById('gD').textContent=l==='de'?'Datenpipeline, Sicherheitsebenen und Validierungs-Engine einsehen. Email fuer Zugang eingeben.':'See the complete data pipeline, security layers, and validation engine. Enter your email for access.';
+  document.getElementById('gB').textContent=l==='de'?'Zugang erhalten':'Get Access';
+  document.getElementById('entI').placeholder=l==='de'?'Ihre Nachricht...':'Type your message...';
+  if(V==='ent'){wel('ent');}else{setupInd();}
 }
 
 // ═══ CHAT ENGINE ═══
@@ -544,6 +555,69 @@ const ML=[{n:'Haiku 4.5',p:'Anthropic',c:'pa',i:'$0.01',o:'$0.05',x:'200K',q:3,t
 function rM(f){const tb=document.getElementById('mB');tb.innerHTML='';(f==='all'?ML:ML.filter(m=>m.t===f)).forEach(m=>{const ds=Array.from({length:5},(_,i)=>`<div class="qd2 ${i<m.q?(m.q>=5?'fg':m.q>=4?'f':'fa'):''}"></div>`).join('');const cl=parseInt(m.x)>=1000?'lg':'';const ic=parseFloat(m.i.replace('$',''))<=.15?'prh':parseFloat(m.i.replace('$',''))>=2?'pre':'';const oc=parseFloat(m.o.replace('$',''))<=.6?'prh':parseFloat(m.o.replace('$',''))>=6?'pre':'';tb.innerHTML+=`<tr><td><div class="mn2">${esc(m.n)}<span class="mp2 ${m.c}">${m.p}</span></div></td><td class="prc ${ic}">${m.i}</td><td class="prc ${oc}">${m.o}</td><td><span class="cb2 ${cl}">${m.x}</span></td><td><div class="qb">${ds}</div></td><td class="pcc2">${esc(m.b)}</td><td class="pcc2"><span class="prt">+</span> ${esc(m.pr)}<br><span class="cnt">-</span> ${esc(m.cn)}</td></tr>`;});}
 function fM(f,b){document.querySelectorAll('.mfb').forEach(x=>x.classList.remove('act'));b.classList.add('act');rM(f);}
 rM('all');updR();wel('ent');
+
+// ═══ TEST PDF FILES ═══
+const testPDFs={
+  ent:[
+    {name:'product-catalog.pdf',desc:{en:'Product Catalog 2026',de:'Produktkatalog 2026'}},
+    {name:'support-policy.pdf',desc:{en:'Support Policy',de:'Support-Richtlinien'}},
+    {name:'api-documentation.pdf',desc:{en:'API Documentation',de:'API-Dokumentation'}},
+  ],
+  corporate:[
+    {name:'kontoeroeffnung-antrag.pdf',desc:{en:'Account Opening Form',de:'Kontoeroeffnungs-Antrag'}},
+    {name:'hypothekenrechner.pdf',desc:{en:'Mortgage Calculator',de:'Hypothekenrechner'}},
+    {name:'agb-finanzdienstleistungen.pdf',desc:{en:'Terms & Conditions',de:'AGB Finanzdienstleistungen'}},
+  ],
+  government:[
+    {name:'id-erneuerung-formular.pdf',desc:{en:'ID Renewal Form',de:'Ausweis-Erneuerung Formular'}},
+    {name:'steuererklaerung-anleitung.pdf',desc:{en:'Tax Filing Guide',de:'Steuererklaerung Anleitung'}},
+    {name:'baubewilligung-checkliste.pdf',desc:{en:'Building Permit Checklist',de:'Baubewilligungs-Checkliste'}},
+  ],
+  healthcare:[
+    {name:'patientenaufnahme.pdf',desc:{en:'Patient Intake Form',de:'Patientenaufnahme-Formular'}},
+    {name:'versicherungsnachweis.pdf',desc:{en:'Insurance Verification',de:'Versicherungsnachweis'}},
+    {name:'laborergebnisse-muster.pdf',desc:{en:'Sample Lab Results',de:'Laborergebnisse Muster'}},
+  ]
+};
+
+const pdfSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
+
+function renderTestFiles(target,key){
+  const list=document.getElementById(target+'FileList');
+  const label=document.getElementById(target+'FilesLabel');
+  if(!list)return;
+  label.textContent=L==='de'?'Test-Dokumente (Drag & Drop oder klicken)':'Test Documents (Drag & drop or click)';
+  const files=testPDFs[key]||testPDFs.ent;
+  list.innerHTML=files.map(f=>`<div class="test-file" onclick="useTestFile('${target}','${f.name}')">${pdfSvg}<span>${f.desc[L]||f.desc.en}</span></div>`).join('');
+}
+
+function useTestFile(target,name){
+  attFile[target]={name:name,testFile:true};
+  document.getElementById(target+'AttN').textContent=name;
+  document.getElementById(target+'Att').classList.add('vis');
+}
+
+// Render initial test files
+renderTestFiles('ent','ent');
+
+// Update test files when switching views
+const origGo=go;
+go=function(v){origGo(v);if(v==='ent')renderTestFiles('ent','ent');else renderTestFiles('ind',v);};
+const origSetupInd=setupInd;
+setupInd=function(){origSetupInd();renderTestFiles('ind',IND);};
+
+// ═══ DRAG & DROP ═══
+['entDrop','indDrop'].forEach(id=>{
+  const el=document.getElementById(id);if(!el)return;
+  el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('dragover');});
+  el.addEventListener('dragleave',()=>el.classList.remove('dragover'));
+  el.addEventListener('drop',e=>{
+    e.preventDefault();el.classList.remove('dragover');
+    const f=e.dataTransfer.files[0];if(!f)return;
+    const tg=id.replace('Drop','');
+    attFile[tg]=f;document.getElementById(tg+'AttN').textContent=f.name;document.getElementById(tg+'Att').classList.add('vis');
+  });
+});
 </script>
 </body>
 </html>
