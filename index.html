@@ -160,7 +160,11 @@
   /* ─── SSO MODAL ─── */
   .sso-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
   .sso-overlay.vis{display:flex}
-  .sso-modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px;max-width:400px;width:90%;text-align:center}
+  .sso-modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px;max-width:400px;width:90%;text-align:center;position:relative}
+  .sso-close{position:absolute;top:12px;right:14px;background:none;border:none;color:var(--text-dim);font-size:20px;cursor:pointer;line-height:1;padding:4px}
+  .sso-close:hover{color:var(--text)}
+  .sso-err{color:var(--red);font-size:11px;margin-bottom:10px;display:none;font-family:var(--mono)}
+  .sso-err.vis{display:block}
   .sso-logo{width:56px;height:56px;border-radius:12px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;font-family:var(--mono);border:1px solid var(--border)}
   .sso-modal h3{font-size:16px;margin-bottom:16px}
   .sso-field{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;margin-bottom:10px;font-family:var(--sans)}
@@ -242,13 +246,13 @@
         <div class="sc" data-sc="custom"><h3>Build Your Own</h3><p>Custom persona and rules.</p><div class="cia" id="cArea"><textarea class="ct" id="cPr" placeholder="Agent role, tone, domain..."></textarea><button class="ab" onclick="apCust()">Activate</button></div></div>
       </div>
       <div class="cw" id="entCw">
-        <div class="cw-h"><div class="cw-av" style="background:var(--accent-soft);color:var(--accent)">A</div><div class="cw-nfo"><h4 id="eAN">Telecom Support Agent</h4><span>Online</span></div><button class="db" onclick="clr('ent')" style="margin-left:auto;font-size:10px;padding:4px 10px">Clear</button></div>
+        <div class="cw-h"><div class="cw-av" style="background:var(--accent-soft);color:var(--accent)">A</div><div class="cw-nfo"><h4 id="eAN">Telecom Support Agent</h4><span>Online</span></div><div style="margin-left:auto;display:flex;align-items:center;gap:6px"><span class="cw-badge pub" id="entBdg">Public</span><button class="db" onclick="entAuth()" style="font-size:10px;padding:4px 10px" id="entAuthBtn">SSO</button><button class="db" onclick="clr('ent')" style="font-size:10px;padding:4px 10px">Clear</button></div></div>
         <div class="cw-msg" id="entM"></div>
         <div class="cw-in"><div class="att-pill" id="entAtt"><span id="entAttN"></span><span class="att-x" onclick="rmAtt('ent')">x</span></div><textarea id="entI" placeholder="Type your message..." rows="1" onkeydown="hk(event,'ent')"></textarea><button class="att-btn" onclick="pickF('ent')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg></button><button class="snd" id="entS" onclick="send('ent')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></div>
       </div>
       <div class="sp">
         <div class="spl">Security & Engine</div>
-        <div class="sk o"><div class="sh" onclick="this.closest('.sk').classList.toggle('o')"><div class="si" style="background:var(--red-soft)">S</div><div class="sti"><h4>Hallucination Prevention</h4><span>Static Data Engine</span></div><span class="sv">&#9654;</span></div><div class="sy"><div class="sx"><ul><li class="br">Critical facts never LLM-generated - injected from verified sources</li><li class="bg">Immutable reference layer cannot be overridden</li><li class="ba">Response cross-validation against source-of-truth</li></ul></div></div></div>
+        <div class="sk"><div class="sh" onclick="this.closest('.sk').classList.toggle('o')"><div class="si" style="background:var(--red-soft)">S</div><div class="sti"><h4>Hallucination Prevention</h4><span>Static Data Engine</span></div><span class="sv">&#9654;</span></div><div class="sy"><div class="sx"><ul><li class="br">Critical facts never LLM-generated - injected from verified sources</li><li class="bg">Immutable reference layer cannot be overridden</li><li class="ba">Response cross-validation against source-of-truth</li></ul></div></div></div>
         <div class="sk"><div class="sh" onclick="this.closest('.sk').classList.toggle('o')"><div class="si" style="background:var(--accent-soft)">D</div><div class="sti"><h4>Data Separation</h4><span>Isolated Pipelines</span></div><span class="sv">&#9654;</span></div><div class="sy"><div class="sx"><ul><li class="bg">KB, Web, Static flow through isolated pipelines</li><li class="ba">External data sanitized before LLM context</li><li class="bb">Source attribution on every response</li></ul></div></div></div>
         <div class="sk"><div class="sh" onclick="this.closest('.sk').classList.toggle('o')"><div class="si" style="background:var(--amber-soft)">A</div><div class="sti"><h4>Auth & Access Tiers</h4><span>Public / SSO / RBAC</span></div><span class="sv">&#9654;</span></div><div class="sy"><div class="sx"><ul><li class="bg">Public: KB, FAQs - no auth</li><li class="ba">SSO: Internal docs, customer data</li><li class="br">RBAC: Admin data with role verification</li></ul></div></div></div>
         <div class="sk"><div class="sh" onclick="this.closest('.sk').classList.toggle('o')"><div class="si" style="background:var(--green-soft)">P</div><div class="sti"><h4>Prompt Security</h4><span>Guardrails</span></div><span class="sv">&#9654;</span></div><div class="sy"><div class="sx"><ul><li class="br">Hard boundaries on forbidden actions</li><li class="bg">Immutable security templates</li><li class="bb">Injection-resistant architecture</li></ul></div></div></div>
@@ -276,19 +280,23 @@
   <!-- SSO MODAL -->
   <div class="sso-overlay" id="ssoOv">
     <div class="sso-modal" id="ssoMod">
+      <button class="sso-close" onclick="closeSSO()">&times;</button>
       <div class="sso-logo" id="ssoLogo">F</div>
       <h3 id="ssoTitle">Secure Login</h3>
       <div id="ssoStep1">
-        <input class="sso-field" id="ssoUser" placeholder="Customer ID"><input class="sso-field" type="password" id="ssoPw" placeholder="Password">
+        <div class="sso-err" id="ssoErr1"></div>
+        <input class="sso-field" id="ssoUser" placeholder="Customer ID">
+        <input class="sso-field" type="password" id="ssoPw" placeholder="Password">
         <div class="sso-hint" id="ssoHint"><strong>Test credentials:</strong><br>ID: <strong>100-200-300</strong><br>Password: <strong>demo2026</strong></div>
         <button class="sso-btn" onclick="ssoLogin()" id="ssoLoginBtn">Sign In</button>
       </div>
       <div id="ssoStep2" style="display:none">
+        <div class="sso-err" id="ssoErr2"></div>
         <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px" id="ssoSmsLabel">Verification code sent to your device</p>
         <div class="sso-phone vis">
-          <div class="phone-frame"><div class="phone-notch"></div><div class="phone-sms"><div class="sms-from" id="ssoSmsFrom">FinanceFirst Security</div><div class="sms-body" id="ssoSmsBody">Your verification code:</div><div class="sms-code">4829</div></div></div>
+          <div class="phone-frame"><div class="phone-notch"></div><div class="phone-sms"><div class="sms-from" id="ssoSmsFrom">FinanceFirst Security</div><div class="sms-body" id="ssoSmsBody">Your verification code:</div><div class="sms-code" id="ssoCodeDisplay">4829</div></div></div>
         </div>
-        <div class="sso-code-wrap"><input class="sso-code-input" id="ssoCode" maxlength="4" placeholder="----"><div class="sso-hint" style="margin-top:10px"><strong>Test code: 4829</strong></div><button class="sso-btn" onclick="ssoVerify()" style="margin-top:10px" id="ssoVerifyBtn">Verify</button></div>
+        <div class="sso-code-wrap"><input class="sso-code-input" id="ssoCode" maxlength="4" placeholder="----"><div class="sso-hint" style="margin-top:10px" id="ssoCodeHint"><strong>Test code: 4829</strong></div><button class="sso-btn" onclick="ssoVerify()" style="margin-top:10px" id="ssoVerifyBtn">Verify</button></div>
       </div>
     </div>
   </div>
@@ -388,7 +396,11 @@ function auth(m){
 }
 
 // ═══ SSO MODAL ═══
+let ssoCurrentCode='';
+function genCode(){return String(Math.floor(1000+Math.random()*9000));}
+
 function showSSO(){
+  ssoCurrentCode=genCode();
   const ind=I[IND];
   document.getElementById('ssoLogo').textContent=ind.logo;document.getElementById('ssoLogo').style.background=ind.theme['--accent-soft'];document.getElementById('ssoLogo').style.color=ind.theme['--accent'];
   document.getElementById('ssoTitle').textContent=L==='de'?'Sicherer Login':'Secure Login';
@@ -398,21 +410,39 @@ function showSSO(){
   document.getElementById('ssoLoginBtn').textContent=L==='de'?'Anmelden':'Sign In';
   document.getElementById('ssoStep1').style.display='block';document.getElementById('ssoStep2').style.display='none';
   document.getElementById('ssoUser').value='';document.getElementById('ssoPw').value='';document.getElementById('ssoCode').value='';
+  document.getElementById('ssoErr1').className='sso-err';document.getElementById('ssoErr2').className='sso-err';
   document.getElementById('ssoOv').classList.add('vis');
 }
 
+function closeSSO(){document.getElementById('ssoOv').classList.remove('vis');}
+
 function ssoLogin(){
+  const u=document.getElementById('ssoUser').value.trim();
+  const p=document.getElementById('ssoPw').value.trim();
+  const err=document.getElementById('ssoErr1');
+  if(!u||!p){err.textContent=L==='de'?'Bitte alle Felder ausfuellen.':'Please fill in all fields.';err.className='sso-err vis';return;}
+  if(u!=='100-200-300'||p!=='demo2026'){err.textContent=L==='de'?'Ungueltige Zugangsdaten.':'Invalid credentials.';err.className='sso-err vis';return;}
+  err.className='sso-err';
+  ssoCurrentCode=genCode();
   document.getElementById('ssoStep1').style.display='none';document.getElementById('ssoStep2').style.display='block';
   const ind=I[IND];
   document.getElementById('ssoSmsLabel').textContent=L==='de'?'Verifizierungscode an Ihr Geraet gesendet':'Verification code sent to your device';
   document.getElementById('ssoSmsFrom').textContent=ind.ssoFrom[L];
   document.getElementById('ssoSmsBody').textContent=L==='de'?'Ihr Verifizierungscode:':'Your verification code:';
+  document.getElementById('ssoCodeDisplay').textContent=ssoCurrentCode;
+  document.getElementById('ssoCodeHint').innerHTML=`<strong>${L==='de'?'Testcode':'Test code'}: ${ssoCurrentCode}</strong>`;
   document.getElementById('ssoVerifyBtn').textContent=L==='de'?'Bestaetigen':'Verify';
 }
 
 function ssoVerify(){
+  const c=document.getElementById('ssoCode').value.trim();
+  const err=document.getElementById('ssoErr2');
+  if(!c){err.textContent=L==='de'?'Bitte Code eingeben.':'Please enter the code.';err.className='sso-err vis';return;}
+  if(c!==ssoCurrentCode){err.textContent=L==='de'?'Ungueltiger Code.':'Invalid code.';err.className='sso-err vis';return;}
   document.getElementById('ssoOv').classList.remove('vis');
-  AU='sso';setupInd();
+  AU='sso';
+  if(V==='ent'){entSSO=true;document.getElementById('entBdg').textContent='SSO';document.getElementById('entBdg').className='cw-badge sso';document.getElementById('entAuthBtn').textContent='Logout';clr('ent');}
+  else{setupInd();}
 }
 
 // ═══ LANG ═══
@@ -483,11 +513,27 @@ async function send(tg){
 }
 
 // ═══ ENTERPRISE CONTROLS ═══
+let entSSO=false;
+function entAuth(){
+  if(entSSO){entSSO=false;document.getElementById('entBdg').textContent='Public';document.getElementById('entBdg').className='cw-badge pub';document.getElementById('entAuthBtn').textContent='SSO';clr('ent');return;}
+  // Show SSO modal for enterprise view
+  ssoCurrentCode=genCode();
+  document.getElementById('ssoLogo').textContent='A';document.getElementById('ssoLogo').style.background='var(--accent-soft)';document.getElementById('ssoLogo').style.color='var(--accent)';
+  document.getElementById('ssoTitle').textContent=L==='de'?'Sicherer Login':'Secure Login';
+  document.getElementById('ssoUser').placeholder=L==='de'?'Kundennummer':'Customer ID';
+  document.getElementById('ssoPw').placeholder=L==='de'?'Passwort':'Password';
+  document.getElementById('ssoHint').innerHTML=`<strong>${L==='de'?'Testzugangsdaten':'Test credentials'}:</strong><br>ID: <strong>100-200-300</strong><br>${L==='de'?'Passwort':'Password'}: <strong>demo2026</strong>`;
+  document.getElementById('ssoLoginBtn').textContent=L==='de'?'Anmelden':'Sign In';
+  document.getElementById('ssoStep1').style.display='block';document.getElementById('ssoStep2').style.display='none';
+  document.getElementById('ssoUser').value='';document.getElementById('ssoPw').value='';document.getElementById('ssoCode').value='';
+  document.getElementById('ssoErr1').className='sso-err';document.getElementById('ssoErr2').className='sso-err';
+  document.getElementById('ssoOv').classList.add('vis');
+}
 function togDemo(){dOn=!dOn;document.getElementById('sDot').className='sd '+(dOn?'a':'p');document.getElementById('sTxt').textContent=dOn?'Demo Active':'Paused';document.getElementById('tBtn').textContent=dOn?'Deactivate':'Reactivate';document.getElementById('tBtn').className='db '+(dOn?'dng':'pri');document.getElementById('entCw').classList.toggle('chat-off',!dOn);}
 function togBk(){document.getElementById('bkA').classList.toggle('vis');}
 function actBk(){if(document.getElementById('bkI').value.trim().startsWith('sk-ant-')){aM='byok';document.getElementById('bkA').classList.remove('vis');addM('ent','BYOK active','sys');}}
 function updR(){document.getElementById('rLim').textContent=`${MX-mc}/${MX}`;}
-async function reqAcc(){const e=document.getElementById('gE').value.trim();if(!e||!e.includes('@'))return;try{await fetch(`${PX}/lead`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e})});}catch(x){}document.getElementById('eGate').innerHTML='<div style="font-size:24px;color:var(--green)">&#10003;</div><h3 style="color:var(--green)">'+(L==='de'?'Zugang gewaehrt! Pruefen Sie Ihre Email.':'Access granted! Check your email.')+'</h3>';}
+async function reqAcc(){const e=document.getElementById('gE').value.trim();if(!e||!e.includes('@'))return;try{await fetch(`${PX}/lead`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e})});}catch(x){}document.getElementById('eGate').innerHTML='<div style="font-size:24px;color:var(--green)">&#10003;</div><h3 style="color:var(--green)">'+(L==='de'?'Zugang freigeschaltet':'Access unlocked')+'</h3><p style="font-size:12px;color:var(--text-muted);margin-top:8px">'+(L==='de'?'Die vollstaendige Architektur-Dokumentation wird Ihnen zugestellt.':'Full architecture documentation will be delivered to you.')+'</p>';}
 document.querySelectorAll('.sc').forEach(c=>{c.addEventListener('click',()=>{const s=c.dataset.sc;document.querySelectorAll('.sc').forEach(x=>x.classList.remove('act'));c.classList.add('act');if(s==='custom'){document.getElementById('cArea').classList.add('vis');return;}document.getElementById('cArea').classList.remove('vis');SC=s;cEnt=[];document.getElementById('eAN').textContent=S[s].name;wel('ent');});});
 function apCust(){const p=document.getElementById('cPr').value.trim();if(!p)return;S.custom.sys=p;SC='custom';cEnt=[];document.getElementById('eAN').textContent='Custom Agent';wel('ent');}
 function clr(tg){if(tg==='ent')cEnt=[];else cInd=[];wel(tg);}
