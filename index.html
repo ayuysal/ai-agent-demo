@@ -6,903 +6,498 @@
 <title>AI Agent Demo – Aytekin Uysal</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Instrument+Serif&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg:#08090a;--surface:#111214;--surface-2:#191a1d;--surface-3:#212225;
-    --border:#2a2b2f;--border-active:#3b82f6;
-    --text:#e8e8ec;--text-muted:#7c7c86;--text-dim:#55555e;
-    --accent:#3b82f6;--accent-soft:rgba(59,130,246,0.12);--accent-glow:rgba(59,130,246,0.06);
-    --green:#22c55e;--green-soft:rgba(34,197,94,0.12);
-    --amber:#f59e0b;--amber-soft:rgba(245,158,11,0.12);
-    --red:#ef4444;--red-soft:rgba(239,68,68,0.12);
-    --purple:#a855f7;--purple-soft:rgba(168,85,247,0.12);
-    --user-bg:#1e293b;--agent-bg:var(--surface-2);
-    --mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif;--serif:'Instrument Serif',serif;
-    --radius:14px;--heading-font:var(--serif);
-  }
+  :root{--bg:#08090a;--surface:#111214;--surface-2:#191a1d;--surface-3:#212225;--border:#2a2b2f;--border-active:#3b82f6;--text:#e8e8ec;--text-muted:#7c7c86;--text-dim:#55555e;--accent:#3b82f6;--accent-soft:rgba(59,130,246,.12);--accent-glow:rgba(59,130,246,.06);--green:#22c55e;--green-soft:rgba(34,197,94,.12);--amber:#f59e0b;--amber-soft:rgba(245,158,11,.12);--red:#ef4444;--red-soft:rgba(239,68,68,.12);--purple:#a855f7;--purple-soft:rgba(168,85,247,.12);--user-bg:#1e293b;--agent-bg:var(--surface-2);--mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif;--serif:'Instrument Serif',serif;--radius:14px;--heading-font:var(--serif)}
   *{margin:0;padding:0;box-sizing:border-box}
   body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.6;min-height:100vh;overflow-x:hidden;transition:background .4s,color .4s}
   body::after{content:'';position:fixed;inset:0;opacity:.025;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");pointer-events:none;z-index:9999}
-  .page-container{max-width:1400px;margin:0 auto;padding:0 24px}
+  .pc{max-width:1400px;margin:0 auto;padding:0 24px}
 
-  /* ─── TOP BAR ─── */
+  /* TOP BAR */
   .top-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px}
   .top-bar-left{display:flex;align-items:center;gap:12px}
   .top-logo{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent);letter-spacing:1px}
   .top-bar-right{display:flex;align-items:center;gap:8px}
-  .view-switcher,.lang-toggle{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden}
-  .view-btn,.lang-btn{padding:6px 14px;font-size:10px;font-family:var(--mono);background:transparent;border:none;color:var(--text-dim);cursor:pointer;transition:all .2s;white-space:nowrap}
-  .view-btn.active,.lang-btn.active{background:var(--accent-soft);color:var(--accent)}
-  .view-btn:hover:not(.active),.lang-btn:hover:not(.active){color:var(--text-muted)}
+  .vs,.lt{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .vb,.lb{padding:6px 14px;font-size:10px;font-family:var(--mono);background:transparent;border:none;color:var(--text-dim);cursor:pointer;transition:all .2s;white-space:nowrap}
+  .vb.active,.lb.active{background:var(--accent-soft);color:var(--accent)}
+  .vb:hover:not(.active),.lb:hover:not(.active){color:var(--text-muted)}
 
-  /* ─── SHARED: HERO ─── */
+  /* HERO (enterprise only) */
   .hero{padding:40px 0 24px;text-align:center;position:relative}
   .hero::before{content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:700px;height:350px;background:radial-gradient(ellipse,var(--accent-glow) 0%,transparent 70%);pointer-events:none}
   .hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:var(--accent-soft);border:1px solid rgba(59,130,246,.2);border-radius:100px;font-size:12px;color:var(--accent);font-family:var(--mono);margin-bottom:16px}
   .hero h1{font-family:var(--heading-font);font-size:44px;font-weight:400;letter-spacing:-.5px;margin-bottom:8px}
   .hero p{font-size:14px;color:var(--text-muted);max-width:560px;margin:0 auto}
-
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
-  /* ─── ENTERPRISE VIEW ─── */
-  #enterpriseView{display:block}
-
-  .demo-controls{margin:16px 0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-  .demo-status{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px}
-  .status-dot{width:7px;height:7px;border-radius:50%}
-  .status-dot.active{background:var(--green);animation:pulse 2s infinite}
-  .status-dot.paused{background:var(--amber)}
-  .demo-model{font-family:var(--mono);font-size:10px;color:var(--text-dim);padding:3px 8px;background:var(--surface-3);border-radius:5px}
-  .demo-rate{font-family:var(--mono);font-size:10px;color:var(--text-muted);margin-left:auto}
-  .demo-btn{padding:5px 14px;border-radius:7px;font-size:11px;font-family:var(--mono);border:1px solid var(--border);cursor:pointer;transition:all .2s;background:var(--surface-3);color:var(--text-muted)}
-  .demo-btn:hover{border-color:var(--accent);color:var(--text)}
-  .demo-btn.danger:hover{border-color:var(--red);color:var(--red)}
-  .demo-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-  .byok-link{font-size:9px;color:var(--text-dim);cursor:pointer;text-decoration:underline;font-family:var(--mono)}
-  .byok-link:hover{color:var(--accent)}
-  .byok-area{display:none;width:100%;margin-top:8px}
-  .byok-area.visible{display:flex;gap:8px;align-items:center}
-  .byok-input{flex:1;padding:7px 10px;background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--mono);font-size:11px;outline:none}
-
-  .email-gate{margin-bottom:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px 32px;text-align:center;position:relative;overflow:hidden}
-  .email-gate::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,var(--accent-glow) 0%,transparent 60%);pointer-events:none}
-  .email-gate h3{font-size:16px;font-weight:600;margin-bottom:6px}
-  .email-gate p{font-size:12px;color:var(--text-muted);max-width:400px;margin:0 auto 16px}
-  .email-gate-form{display:flex;gap:8px;max-width:400px;margin:0 auto}
-  .email-gate-input{flex:1;padding:9px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;font-family:var(--sans)}
-  .email-gate-input:focus{border-color:var(--accent)}
-  .email-gate-btn{padding:9px 20px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);white-space:nowrap}
-  .email-gate-btn:hover{background:#2563eb}
-  .gate-features{display:flex;gap:16px;justify-content:center;margin-top:16px;flex-wrap:wrap}
-  .gate-feature{font-size:11px;color:var(--text-dim);font-family:var(--mono);display:flex;align-items:center;gap:5px}
-  .gate-dot{width:5px;height:5px;border-radius:50%}
-
-  /* Enterprise layout */
-  .ent-layout{display:grid;grid-template-columns:260px 1fr 280px;gap:16px;padding-bottom:24px;min-height:500px}
-  .sidebar{display:flex;flex-direction:column;gap:10px}
-  .sidebar-label{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--text-dim);padding:0 4px}
-  .scenario-card{padding:13px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
-  .scenario-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent;transition:background .25s}
-  .scenario-card:hover{background:var(--surface-2);border-color:var(--border-active);transform:translateX(2px)}
-  .scenario-card.active{background:var(--surface-2);border-color:var(--accent);box-shadow:0 0 20px var(--accent-glow)}
-  .scenario-card.active::before{background:var(--accent)}
-  .scenario-icon{font-size:18px;margin-bottom:5px}
-  .scenario-card h3{font-size:12px;font-weight:600;margin-bottom:2px}
-  .scenario-card p{font-size:10px;color:var(--text-muted);line-height:1.5}
-  .scenario-sources{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
-  .source-tag{font-size:9px;padding:2px 6px;border-radius:4px;font-family:var(--mono);font-weight:500}
-  .custom-input-area{display:none;margin-top:8px}
-  .custom-input-area.visible{display:block}
-  .custom-textarea{width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--sans);font-size:11px;resize:vertical;min-height:55px;outline:none}
-  .apply-btn{margin-top:5px;width:100%;padding:6px;background:var(--accent);border:none;border-radius:7px;color:#fff;font-size:11px;font-weight:600;cursor:pointer}
-
-  /* Security panel */
-  .security-panel{display:flex;flex-direction:column;gap:8px}
-  .security-panel-label{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--text-dim);padding:0 4px}
-  .sec-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
-  .sec-header{padding:10px 12px;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;transition:background .2s}
-  .sec-header:hover{background:var(--surface-2)}
-  .sec-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
-  .sec-title{flex:1}
-  .sec-title h4{font-size:11px;font-weight:600}
-  .sec-title span{font-size:9px;color:var(--text-dim)}
-  .sec-chevron{color:var(--text-dim);font-size:9px;transition:transform .2s}
-  .sec-card.open .sec-chevron{transform:rotate(90deg)}
-  .sec-body{max-height:0;overflow:hidden;transition:max-height .3s}
-  .sec-card.open .sec-body{max-height:300px}
-  .sec-content{padding:0 12px 12px;font-size:10px;color:var(--text-muted);line-height:1.7}
-  .sec-content ul{list-style:none;padding:0}
-  .sec-content li{padding:2px 0 2px 14px;position:relative}
-  .sec-content li::before{content:'';position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:2px}
+  /* ENTERPRISE: controls, gate, layout, security, models - kept compact */
+  #entView{display:block}
+  .dc{margin:16px 0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .ds{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px}
+  .sd{width:7px;height:7px;border-radius:50%}.sd.a{background:var(--green);animation:pulse 2s infinite}.sd.p{background:var(--amber)}
+  .dm{font-family:var(--mono);font-size:10px;color:var(--text-dim);padding:3px 8px;background:var(--surface-3);border-radius:5px}
+  .dr{font-family:var(--mono);font-size:10px;color:var(--text-muted);margin-left:auto}
+  .db{padding:5px 14px;border-radius:7px;font-size:11px;font-family:var(--mono);border:1px solid var(--border);cursor:pointer;background:var(--surface-3);color:var(--text-muted);transition:all .2s}
+  .db:hover{border-color:var(--accent);color:var(--text)}.db.dng:hover{border-color:var(--red);color:var(--red)}.db.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .bk-l{font-size:9px;color:var(--text-dim);cursor:pointer;text-decoration:underline;font-family:var(--mono)}.bk-l:hover{color:var(--accent)}
+  .bk-a{display:none;width:100%;margin-top:8px}.bk-a.vis{display:flex;gap:8px;align-items:center}
+  .bk-i{flex:1;padding:7px 10px;background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--mono);font-size:11px;outline:none}
+  .eg{margin-bottom:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px 32px;text-align:center;position:relative;overflow:hidden}
+  .eg::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,var(--accent-glow) 0%,transparent 60%);pointer-events:none}
+  .eg h3{font-size:16px;font-weight:600;margin-bottom:6px}.eg p{font-size:12px;color:var(--text-muted);max-width:400px;margin:0 auto 16px}
+  .eg-f{display:flex;gap:8px;max-width:400px;margin:0 auto}
+  .eg-i{flex:1;padding:9px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;font-family:var(--sans)}
+  .eg-i:focus{border-color:var(--accent)}
+  .eg-b{padding:9px 20px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);white-space:nowrap}
+  .gf{display:flex;gap:16px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+  .gfi{font-size:11px;color:var(--text-dim);font-family:var(--mono);display:flex;align-items:center;gap:5px}
+  .gd{width:5px;height:5px;border-radius:50%}
+  .el{display:grid;grid-template-columns:260px 1fr 280px;gap:16px;padding-bottom:24px;min-height:500px}
+  .sb{display:flex;flex-direction:column;gap:10px}
+  .sl{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--text-dim);padding:0 4px}
+  .sc{padding:13px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+  .sc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent;transition:background .25s}
+  .sc:hover{background:var(--surface-2);border-color:var(--border-active);transform:translateX(2px)}
+  .sc.act{background:var(--surface-2);border-color:var(--accent);box-shadow:0 0 20px var(--accent-glow)}
+  .sc.act::before{background:var(--accent)}
+  .sc h3{font-size:12px;font-weight:600;margin-bottom:2px}.sc p{font-size:10px;color:var(--text-muted);line-height:1.5}
+  .ss{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+  .st{font-size:9px;padding:2px 6px;border-radius:4px;font-family:var(--mono);font-weight:500}
+  .cia{display:none;margin-top:8px}.cia.vis{display:block}
+  .ct{width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--sans);font-size:11px;resize:vertical;min-height:55px;outline:none}
+  .ab{margin-top:5px;width:100%;padding:6px;background:var(--accent);border:none;border-radius:7px;color:#fff;font-size:11px;font-weight:600;cursor:pointer}
+  .sp{display:flex;flex-direction:column;gap:8px}
+  .spl{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--text-dim);padding:0 4px}
+  .sk{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  .sh{padding:10px 12px;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;transition:background .2s}
+  .sh:hover{background:var(--surface-2)}
+  .si{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+  .sti{flex:1}.sti h4{font-size:11px;font-weight:600}.sti span{font-size:9px;color:var(--text-dim)}
+  .sv{color:var(--text-dim);font-size:9px;transition:transform .2s}.sk.o .sv{transform:rotate(90deg)}
+  .sy{max-height:0;overflow:hidden;transition:max-height .3s}.sk.o .sy{max-height:300px}
+  .sx{padding:0 12px 12px;font-size:10px;color:var(--text-muted);line-height:1.7}
+  .sx ul{list-style:none;padding:0}.sx li{padding:2px 0 2px 14px;position:relative}
+  .sx li::before{content:'';position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:2px}
   .bg::before{background:var(--green)}.ba::before{background:var(--amber)}.br::before{background:var(--red)}.bb::before{background:var(--accent)}
+  .ms{margin-bottom:20px}.mc{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  .mh{padding:16px 20px 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  .mh h3{font-size:13px;font-weight:600}.mh>span{font-family:var(--mono);font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px}
+  .mfl{display:flex;gap:5px}
+  .mfb{padding:4px 10px;background:var(--surface-3);border:1px solid var(--border);border-radius:6px;color:var(--text-muted);font-size:10px;font-family:var(--mono);cursor:pointer}
+  .mfb.act{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+  .mtw{padding:12px 20px 16px;overflow-x:auto}
+  .mt2{width:100%;border-collapse:collapse;font-size:11px}
+  .mt2 th{text-align:left;padding:7px 10px;font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-dim);border-bottom:1px solid var(--border);white-space:nowrap}
+  .mt2 td{padding:8px 10px;border-bottom:1px solid rgba(42,43,47,.5);vertical-align:middle}
+  .mt2 tr:last-child td{border-bottom:none}.mt2 tr:hover td{background:rgba(255,255,255,.015)}
+  .mn2{font-weight:600;display:flex;align-items:center;gap:6px}
+  .mp2{font-size:8px;padding:2px 5px;border-radius:3px;font-family:var(--mono);font-weight:500;white-space:nowrap}
+  .pa{background:rgba(204,120,50,.15);color:#cc7832}.po{background:rgba(16,163,127,.15);color:#10a37f}.pg{background:rgba(66,133,244,.15);color:#4285f4}.pm{background:rgba(0,128,255,.15);color:#0080ff}.pmi{background:rgba(255,119,0,.15);color:#f70}.pd{background:rgba(80,120,200,.15);color:#5078c8}
+  .prc{font-family:var(--mono);font-size:10px;color:var(--text-muted)}
+  .prh{color:var(--green);font-weight:500}.pre{color:var(--amber)}
+  .qb{display:flex;gap:2px}.qd2{width:7px;height:7px;border-radius:2px;background:var(--surface-3)}.qd2.f{background:var(--accent)}.qd2.fg{background:var(--green)}.qd2.fa{background:var(--amber)}
+  .cb2{font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:4px;background:var(--surface-3);color:var(--text-muted);white-space:nowrap}.cb2.lg{background:var(--green-soft);color:var(--green)}
+  .pcc2{font-size:10px;color:var(--text-muted);max-width:180px}.prt{color:var(--green);font-size:9px}.cnt{color:var(--red);font-size:9px}
+  .mn3{padding:0 20px 12px;font-size:9px;font-family:var(--mono);color:var(--text-dim)}
 
-  /* Model table */
-  .models-section{margin-bottom:20px}
-  .models-container{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
-  .models-header{padding:16px 20px 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
-  .models-header h3{font-size:13px;font-weight:600}
-  .models-header span{font-family:var(--mono);font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px}
-  .model-filters{display:flex;gap:5px}
-  .mf-btn{padding:4px 10px;background:var(--surface-3);border:1px solid var(--border);border-radius:6px;color:var(--text-muted);font-size:10px;font-family:var(--mono);cursor:pointer}
-  .mf-btn.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
-  .models-table-wrap{padding:12px 20px 16px;overflow-x:auto}
-  .mt{width:100%;border-collapse:collapse;font-size:11px}
-  .mt th{text-align:left;padding:7px 10px;font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-dim);border-bottom:1px solid var(--border);white-space:nowrap}
-  .mt td{padding:8px 10px;border-bottom:1px solid rgba(42,43,47,.5);vertical-align:middle}
-  .mt tr:last-child td{border-bottom:none}
-  .mt tr:hover td{background:rgba(255,255,255,.015)}
-  .mn{font-weight:600;display:flex;align-items:center;gap:6px}
-  .mp{font-size:8px;padding:2px 5px;border-radius:3px;font-family:var(--mono);font-weight:500;white-space:nowrap}
-  .p-ant{background:rgba(204,120,50,.15);color:#cc7832}.p-oai{background:rgba(16,163,127,.15);color:#10a37f}
-  .p-goo{background:rgba(66,133,244,.15);color:#4285f4}.p-met{background:rgba(0,128,255,.15);color:#0080ff}
-  .p-mis{background:rgba(255,119,0,.15);color:#f70}.p-ds{background:rgba(80,120,200,.15);color:#5078c8}
-  .pc{font-family:var(--mono);font-size:10px;color:var(--text-muted)}
-  .ph{color:var(--green);font-weight:500}.pe{color:var(--amber)}
-  .qbar{display:flex;gap:2px}.qd{width:7px;height:7px;border-radius:2px;background:var(--surface-3)}
-  .qd.f{background:var(--accent)}.qd.fg{background:var(--green)}.qd.fa{background:var(--amber)}
-  .cb{font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:4px;background:var(--surface-3);color:var(--text-muted);white-space:nowrap}
-  .cb.lg{background:var(--green-soft);color:var(--green)}
-  .pcc{font-size:10px;color:var(--text-muted);max-width:180px}
-  .pt{color:var(--green);font-size:9px}.ct{color:var(--red);font-size:9px}
-  .models-note{padding:0 20px 12px;font-size:9px;font-family:var(--mono);color:var(--text-dim)}
-
-  /* ─── INDUSTRY VIEWS (Corporate/Gov/Healthcare) ─── */
-  #industryView{display:none}
-
-  .ind-page{min-height:calc(100vh - 60px);display:flex;flex-direction:column}
-
-  .ind-header{padding:24px 0;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:16px}
+  /* ─── INDUSTRY VIEW ─── */
+  #indView{display:none}
+  .ind-hdr{padding:20px 0;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:16px}
   .ind-brand{display:flex;align-items:center;gap:14px}
-  .ind-logo{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;border:1px solid var(--border)}
-  .ind-brand-text h2{font-size:20px;font-weight:600}
-  .ind-brand-text span{font-size:11px;color:var(--text-muted)}
-
+  .ind-logo{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;font-family:var(--mono);border:1px solid var(--border)}
+  .ind-brand h2{font-size:18px;font-weight:600}
+  .ind-brand span{font-size:11px;color:var(--text-muted)}
   .ind-auth{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
-  .auth-btn{padding:8px 18px;font-size:12px;font-family:var(--sans);background:transparent;border:none;color:var(--text-dim);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px}
-  .auth-btn.active{background:var(--accent-soft);color:var(--accent);font-weight:600}
-  .auth-btn:hover:not(.active){color:var(--text-muted)}
-  .auth-icon{font-size:14px}
+  .atb{padding:8px 18px;font-size:12px;font-family:var(--sans);background:transparent;border:none;color:var(--text-dim);cursor:pointer;transition:all .2s}
+  .atb.act{background:var(--accent-soft);color:var(--accent);font-weight:600}
+  .atb:hover:not(.act){color:var(--text-muted)}
+  .ind-chat-wrap{max-width:700px;margin:24px auto;padding-bottom:24px}
 
-  .ind-body{flex:1;display:grid;grid-template-columns:1fr 340px;gap:20px;padding:24px 0}
-
-  .ind-info{display:flex;flex-direction:column;gap:16px}
-  .ind-info-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
-  .ind-info-card h3{font-size:14px;font-weight:600;margin-bottom:8px}
-  .ind-info-card p{font-size:12px;color:var(--text-muted);line-height:1.7}
-  .ind-features{display:flex;flex-direction:column;gap:8px;margin-top:12px}
-  .ind-feat{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted)}
-  .ind-feat-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-
-  /* Chat widget */
-  .chat-widget{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;max-height:600px}
-  .cw-header{padding:14px 16px;border-bottom:1px solid var(--border);background:var(--surface-2);display:flex;align-items:center;gap:10px}
-  .cw-avatar{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;border:1px solid var(--border)}
-  .cw-info h4{font-size:13px;font-weight:600}
-  .cw-info span{font-size:10px;color:var(--green);font-family:var(--mono)}
-  .cw-auth-badge{margin-left:auto;font-size:9px;font-family:var(--mono);padding:3px 8px;border-radius:5px}
-  .cw-auth-badge.public{background:var(--green-soft);color:var(--green)}
-  .cw-auth-badge.sso{background:var(--amber-soft);color:var(--amber)}
-
-  .cw-messages{flex:1;overflow-y:auto;padding:14px;min-height:300px;max-height:420px;display:flex;flex-direction:column;gap:10px}
-  .cw-messages::-webkit-scrollbar{width:4px}
-  .cw-messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-
-  .message{max-width:85%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.6;animation:msgIn .3s ease;white-space:pre-wrap}
-  @keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-  .message.user{background:var(--user-bg);align-self:flex-end;border-bottom-right-radius:4px}
-  .message.agent{background:var(--agent-bg);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:4px}
-  .message.system{background:var(--accent-soft);border:1px solid rgba(59,130,246,.15);align-self:center;text-align:center;font-size:11px;color:var(--accent);font-family:var(--mono);max-width:90%;padding:6px 14px;border-radius:8px}
-  .source-badges{align-self:flex-start;display:flex;gap:5px;flex-wrap:wrap;padding-left:4px;animation:msgIn .3s ease}
-  .src-badge{font-size:9px;font-family:var(--mono);font-weight:500;padding:3px 8px;border-radius:5px;display:flex;align-items:center;gap:4px;opacity:0;transform:scale(.8);transition:all .3s}
-  .src-badge.visible{opacity:1;transform:scale(1)}
-  .src-kb{background:var(--green-soft);color:var(--green)}.src-api{background:var(--amber-soft);color:var(--amber)}
-  .src-static{background:var(--red-soft);color:var(--red)}.src-web{background:var(--purple-soft);color:var(--purple)}
-
-  .typing-indicator{display:flex;gap:5px;padding:10px 14px;background:var(--agent-bg);border:1px solid var(--border);border-radius:12px;border-bottom-left-radius:4px;align-self:flex-start;animation:msgIn .3s ease}
-  .typing-dot{width:6px;height:6px;border-radius:50%;background:var(--text-dim);animation:tb 1.4s infinite}
-  .typing-dot:nth-child(2){animation-delay:.2s}.typing-dot:nth-child(3){animation-delay:.4s}
+  /* Chat widget (shared) */
+  .cw{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  .cw-h{padding:14px 16px;border-bottom:1px solid var(--border);background:var(--surface-2);display:flex;align-items:center;gap:10px}
+  .cw-av{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;font-family:var(--mono);border:1px solid var(--border)}
+  .cw-nfo h4{font-size:13px;font-weight:600}.cw-nfo span{font-size:10px;color:var(--green);font-family:var(--mono)}
+  .cw-badge{margin-left:auto;font-size:9px;font-family:var(--mono);padding:3px 8px;border-radius:5px}
+  .cw-badge.pub{background:var(--green-soft);color:var(--green)}.cw-badge.sso{background:var(--amber-soft);color:var(--amber)}
+  .cw-msg{flex:1;overflow-y:auto;padding:14px;min-height:400px;max-height:520px;display:flex;flex-direction:column;gap:10px}
+  .cw-msg::-webkit-scrollbar{width:4px}.cw-msg::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+  .msg{max-width:85%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.7;animation:mi .3s ease;white-space:pre-wrap}
+  @keyframes mi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  .msg.u{background:var(--user-bg);align-self:flex-end;border-bottom-right-radius:4px}
+  .msg.ag{background:var(--agent-bg);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:4px}
+  .msg.sys{background:var(--accent-soft);border:1px solid rgba(59,130,246,.15);align-self:center;text-align:center;font-size:11px;color:var(--accent);font-family:var(--mono);max-width:90%;padding:6px 14px;border-radius:8px}
+  .srb{align-self:flex-start;display:flex;gap:5px;flex-wrap:wrap;padding-left:4px;animation:mi .3s ease}
+  .srb span{font-size:9px;font-family:var(--mono);font-weight:500;padding:3px 8px;border-radius:5px;opacity:0;transform:scale(.8);transition:all .3s}
+  .srb span.v{opacity:1;transform:scale(1)}
+  .s-kb{background:var(--green-soft);color:var(--green)}.s-api{background:var(--amber-soft);color:var(--amber)}.s-st{background:var(--red-soft);color:var(--red)}.s-web{background:var(--purple-soft);color:var(--purple)}
+  .ti{display:flex;gap:5px;padding:10px 14px;background:var(--agent-bg);border:1px solid var(--border);border-radius:12px;border-bottom-left-radius:4px;align-self:flex-start;animation:mi .3s ease}
+  .td{width:6px;height:6px;border-radius:50%;background:var(--text-dim);animation:tb 1.4s infinite}
+  .td:nth-child(2){animation-delay:.2s}.td:nth-child(3){animation-delay:.4s}
   @keyframes tb{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+  .cw-in{padding:12px 16px;border-top:1px solid var(--border);background:var(--surface-2);display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+  .cw-in textarea{flex:1;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;resize:none;max-height:80px;min-height:38px;line-height:1.4}
+  .cw-in textarea:focus{border-color:var(--accent)}.cw-in textarea::placeholder{color:var(--text-dim)}
+  .snd{width:38px;height:38px;border-radius:10px;background:var(--accent);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+  .snd:hover{background:#2563eb;transform:scale(1.05)}.snd:disabled{opacity:.4;cursor:not-allowed;transform:none}
+  .snd svg{width:15px;height:15px}
+  /* Paperclip button */
+  .att-btn{width:38px;height:38px;border-radius:10px;background:var(--surface-3);border:1px solid var(--border);color:var(--text-dim);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+  .att-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .att-btn svg{width:16px;height:16px}
+  .att-pill{display:none;width:100%;padding:6px 10px;background:var(--surface-3);border-radius:8px;font-size:11px;color:var(--text-muted);font-family:var(--mono);align-items:center;gap:6px}
+  .att-pill.vis{display:flex}
+  .att-pill .att-x{cursor:pointer;color:var(--red);margin-left:auto;font-weight:700}
 
-  .cw-input{padding:12px 16px;border-top:1px solid var(--border);background:var(--surface-2);display:flex;gap:8px;align-items:flex-end}
-  .cw-input textarea{flex:1;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;resize:none;max-height:80px;min-height:38px;line-height:1.4}
-  .cw-input textarea:focus{border-color:var(--accent)}
-  .cw-input textarea::placeholder{color:var(--text-dim)}
-  .send-btn{width:38px;height:38px;border-radius:10px;background:var(--accent);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .send-btn:hover{background:#2563eb;transform:scale(1.05)}.send-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
-  .send-btn svg{width:15px;height:15px}
-
-  /* Welcome */
   .welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--text-dim);text-align:center;padding:24px}
-  .welcome .wi{font-size:32px;margin-bottom:4px}
-  .welcome h3{font-size:14px;color:var(--text-muted);font-weight:500}
-  .welcome p{font-size:11px;max-width:260px}
-  .suggestion-chips{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:8px}
-  .sug{padding:5px 10px;background:var(--surface-3);border:1px solid var(--border);border-radius:100px;font-size:10px;color:var(--text-muted);cursor:pointer;font-family:var(--sans);transition:all .2s}
-  .sug:hover{border-color:var(--accent);color:var(--text);background:var(--accent-soft)}
-
+  .welcome h3{font-size:14px;color:var(--text-muted);font-weight:500}.welcome p{font-size:11px;max-width:260px}
+  .sgc{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:8px}
+  .sg{padding:6px 12px;background:var(--surface-3);border:1px solid var(--border);border-radius:100px;font-size:11px;color:var(--text-muted);cursor:pointer;font-family:var(--sans);transition:all .2s}
+  .sg:hover{border-color:var(--accent);color:var(--text);background:var(--accent-soft)}
   .demo-footer{text-align:center;padding:16px 0 36px;font-size:10px;color:var(--text-dim);font-family:var(--mono)}
   .demo-footer a{color:var(--accent);text-decoration:none}
 
-  /* ─── RESPONSIVE ─── */
-  @media(max-width:1100px){
-    .ent-layout{grid-template-columns:1fr}
-    .sidebar{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
-    .sidebar-label{grid-column:1/-1}
-    .security-panel{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}
-    .security-panel-label{grid-column:1/-1}
-    .ind-body{grid-template-columns:1fr}
-    .chat-widget{max-height:500px}
-  }
-  @media(max-width:768px){.hero h1{font-size:30px}.top-bar{flex-direction:column;align-items:flex-start}}
+  /* ─── SSO MODAL ─── */
+  .sso-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+  .sso-overlay.vis{display:flex}
+  .sso-modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px;max-width:400px;width:90%;text-align:center}
+  .sso-logo{width:56px;height:56px;border-radius:12px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;font-family:var(--mono);border:1px solid var(--border)}
+  .sso-modal h3{font-size:16px;margin-bottom:16px}
+  .sso-field{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;margin-bottom:10px;font-family:var(--sans)}
+  .sso-field:focus{border-color:var(--accent)}
+  .sso-hint{background:var(--surface-3);border-radius:8px;padding:10px;margin-bottom:16px;font-size:11px;color:var(--text-muted);font-family:var(--mono);text-align:left}
+  .sso-hint strong{color:var(--text)}
+  .sso-btn{width:100%;padding:10px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans)}
+  .sso-btn:hover{background:#2563eb}
+  /* Phone graphic */
+  .sso-phone{display:none;margin:0 auto}
+  .sso-phone.vis{display:block}
+  .phone-frame{width:220px;margin:0 auto;border:3px solid var(--border);border-radius:28px;padding:16px 12px 20px;background:var(--bg);position:relative}
+  .phone-notch{width:80px;height:6px;background:var(--border);border-radius:3px;margin:0 auto 16px}
+  .phone-sms{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px;text-align:left}
+  .phone-sms .sms-from{font-size:10px;color:var(--text-dim);font-family:var(--mono);margin-bottom:4px}
+  .phone-sms .sms-body{font-size:13px;color:var(--text)}
+  .phone-sms .sms-code{font-size:24px;font-weight:700;color:var(--accent);letter-spacing:4px;margin-top:6px;font-family:var(--mono)}
+  .sso-code-wrap{margin-top:12px}
+  .sso-code-input{width:140px;padding:10px;text-align:center;font-size:18px;letter-spacing:6px;font-family:var(--mono);font-weight:700;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);outline:none}
+  .sso-code-input:focus{border-color:var(--accent)}
 
-  .chat-disabled .cw-messages{opacity:.5;pointer-events:none}
-  .chat-disabled .cw-input{opacity:.4;pointer-events:none}
+  .chat-off .cw-msg{opacity:.5;pointer-events:none}.chat-off .cw-in{opacity:.4;pointer-events:none}
+  @media(max-width:1100px){.el{grid-template-columns:1fr}.sb{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}.sl{grid-column:1/-1}.sp{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}.spl{grid-column:1/-1}}
+  @media(max-width:768px){.hero h1{font-size:30px}.top-bar{flex-direction:column;align-items:flex-start}}
 </style>
 </head>
 <body>
-
-<div class="page-container">
-
-  <!-- TOP BAR -->
+<div class="pc">
   <div class="top-bar">
-    <div class="top-bar-left">
-      <span class="top-logo">AYTEKIN UYSAL</span>
-    </div>
+    <div class="top-bar-left"><span class="top-logo">AYTEKIN UYSAL</span></div>
     <div class="top-bar-right">
-      <div class="view-switcher">
-        <button class="view-btn active" onclick="switchView('enterprise')">Enterprise</button>
-        <button class="view-btn" onclick="switchView('corporate')">Corporate</button>
-        <button class="view-btn" onclick="switchView('government')">Staatlich</button>
-        <button class="view-btn" onclick="switchView('healthcare')">Gesundheit</button>
+      <div class="vs">
+        <button class="vb active" onclick="go('ent')" id="vEnt">Architektur</button>
+        <button class="vb" onclick="go('corporate')" id="vCorp">Corporate</button>
+        <button class="vb" onclick="go('government')" id="vGov">Staatlich</button>
+        <button class="vb" onclick="go('healthcare')" id="vHc">Gesundheit</button>
       </div>
-      <div class="lang-toggle">
-        <button class="lang-btn active" onclick="setLang('en')">EN</button>
-        <button class="lang-btn" onclick="setLang('de')">DE</button>
+      <div class="lt">
+        <button class="lb active" onclick="lang('en')">EN</button>
+        <button class="lb" onclick="lang('de')">DE</button>
       </div>
     </div>
   </div>
 
-  <!-- ════════════════════════════════════════ -->
-  <!-- ENTERPRISE VIEW (Full Showcase)         -->
-  <!-- ════════════════════════════════════════ -->
-  <div id="enterpriseView">
+  <!-- ═══ ENTERPRISE / ARCHITEKTUR VIEW ═══ -->
+  <div id="entView">
     <div class="hero">
-      <div class="hero-badge" data-t="hero_badge">Live AI Agent Demo</div>
-      <h1 data-t="hero_title">Enterprise AI Agent</h1>
-      <p data-t="hero_desc">Interactive demo showing how a production-grade AI agent handles queries with data routing, security layers, and hallucination prevention.</p>
+      <div class="hero-badge" id="hBadge">Live AI Agent Demo</div>
+      <h1 id="hTitle">AI Agent Architecture</h1>
+      <p id="hDesc">See how a production-grade AI agent routes data, validates responses, and prevents hallucinations. Choose a scenario and test it live.</p>
     </div>
-
-    <div class="demo-controls" id="demoControls">
-      <div class="demo-status"><span class="status-dot active" id="statusDot"></span><span id="statusText">Demo Active</span></div>
-      <span class="demo-model">claude-sonnet-4-20250514</span>
-      <span class="demo-rate" id="rateLimit">20/20</span>
-      <button class="demo-btn danger" id="toggleBtn" onclick="toggleDemo()">Deactivate</button>
-      <span class="byok-link" onclick="toggleBYOK()">Use own key</span>
-      <div class="byok-area" id="byokArea">
-        <input type="password" class="byok-input" id="byokInput" placeholder="sk-ant-...">
-        <button class="demo-btn primary" onclick="activateBYOK()">Apply</button>
-      </div>
+    <div class="dc" id="demoCtrl">
+      <div class="ds"><span class="sd a" id="sDot"></span><span id="sTxt">Demo Active</span></div>
+      <span class="dm">claude-sonnet-4-20250514</span>
+      <span class="dr" id="rLim">20/20</span>
+      <button class="db dng" id="tBtn" onclick="togDemo()">Deactivate</button>
+      <span class="bk-l" onclick="togBk()">Use own key</span>
+      <div class="bk-a" id="bkA"><input type="password" class="bk-i" id="bkI" placeholder="sk-ant-..."><button class="db pri" onclick="actBk()">Apply</button></div>
     </div>
-
-    <div class="email-gate" id="emailGate">
-      <div style="font-size:28px;margin-bottom:10px">&#128272;</div>
-      <h3 data-t="gate_title">Unlock Full Architecture View</h3>
-      <p data-t="gate_desc">See the complete data pipeline, security layers, and validation engine. Enter your email for access.</p>
-      <div class="email-gate-form">
-        <input type="email" class="email-gate-input" id="gateEmail" placeholder="your@email.com">
-        <button class="email-gate-btn" onclick="requestAccess()">Get Access</button>
-      </div>
-      <div class="gate-features">
-        <span class="gate-feature"><span class="gate-dot" style="background:var(--red)"></span> Security Engine</span>
-        <span class="gate-feature"><span class="gate-dot" style="background:var(--green)"></span> Data Pipeline</span>
-        <span class="gate-feature"><span class="gate-dot" style="background:var(--amber)"></span> Validation Flow</span>
-        <span class="gate-feature"><span class="gate-dot" style="background:var(--purple)"></span> Auth Layers</span>
+    <div class="eg" id="eGate">
+      <div style="font-size:24px;margin-bottom:10px;color:var(--accent)">&#9881;</div>
+      <h3 id="gT">Unlock Full Architecture View</h3>
+      <p id="gD">See the complete data pipeline, security layers, and validation engine. Enter your email for access.</p>
+      <div class="eg-f"><input type="email" class="eg-i" id="gE" placeholder="your@email.com"><button class="eg-b" onclick="reqAcc()" id="gB">Get Access</button></div>
+      <div class="gf">
+        <span class="gfi"><span class="gd" style="background:var(--red)"></span> Security Engine</span>
+        <span class="gfi"><span class="gd" style="background:var(--green)"></span> Data Pipeline</span>
+        <span class="gfi"><span class="gd" style="background:var(--amber)"></span> Validation Flow</span>
+        <span class="gfi"><span class="gd" style="background:var(--purple)"></span> Auth Layers</span>
       </div>
     </div>
-
-    <div class="ent-layout">
-      <!-- Sidebar -->
-      <div class="sidebar">
-        <div class="sidebar-label">Scenarios</div>
-        <div class="scenario-card active" data-scenario="telecom">
-          <div class="scenario-icon">&#128241;</div>
-          <h3>Telecom Support</h3>
-          <p>Billing, plan changes, SIM activation.</p>
-          <div class="scenario-sources">
-            <span class="source-tag" style="background:var(--green-soft);color:var(--green)">KB</span>
-            <span class="source-tag" style="background:var(--red-soft);color:var(--red)">Static</span>
-            <span class="source-tag" style="background:var(--amber-soft);color:var(--amber)">API</span>
-          </div>
-        </div>
-        <div class="scenario-card" data-scenario="saas">
-          <div class="scenario-icon">&#128188;</div>
-          <h3>SaaS Onboarding</h3>
-          <p>Setup, features, integrations.</p>
-          <div class="scenario-sources">
-            <span class="source-tag" style="background:var(--green-soft);color:var(--green)">KB</span>
-            <span class="source-tag" style="background:var(--purple-soft);color:var(--purple)">Web</span>
-          </div>
-        </div>
-        <div class="scenario-card" data-scenario="ecommerce">
-          <div class="scenario-icon">&#128722;</div>
-          <h3>E-Commerce</h3>
-          <p>Recommendations, orders, returns.</p>
-          <div class="scenario-sources">
-            <span class="source-tag" style="background:var(--green-soft);color:var(--green)">KB</span>
-            <span class="source-tag" style="background:var(--red-soft);color:var(--red)">Static</span>
-            <span class="source-tag" style="background:var(--amber-soft);color:var(--amber)">API</span>
-            <span class="source-tag" style="background:var(--purple-soft);color:var(--purple)">Web</span>
-          </div>
-        </div>
-        <div class="sidebar-label">Custom</div>
-        <div class="scenario-card" data-scenario="custom">
-          <div class="scenario-icon">&#128295;</div>
-          <h3>Build Your Own</h3>
-          <p>Custom persona and rules.</p>
-          <div class="custom-input-area" id="customArea">
-            <textarea class="custom-textarea" id="customPrompt" placeholder="Agent role, tone, domain..."></textarea>
-            <button class="apply-btn" onclick="applyCustom()">Activate</button>
-          </div>
-        </div>
+    <div class="el">
+      <div class="sb">
+        <div class="sl">Scenarios</div>
+        <div class="sc act" data-sc="telecom"><h3>Telecom Support</h3><p>Billing, plans, SIM activation.</p><div class="ss"><span class="st" style="background:var(--green-soft);color:var(--green)">KB</span><span class="st" style="background:var(--red-soft);color:var(--red)">Static</span><span class="st" style="background:var(--amber-soft);color:var(--amber)">API</span></div></div>
+        <div class="sc" data-sc="saas"><h3>SaaS Onboarding</h3><p>Setup, features, integrations.</p><div class="ss"><span class="st" style="background:var(--green-soft);color:var(--green)">KB</span><span class="st" style="background:var(--purple-soft);color:var(--purple)">Web</span></div></div>
+        <div class="sc" data-sc="ecommerce"><h3>E-Commerce</h3><p>Recommendations, orders, returns.</p><div class="ss"><span class="st" style="background:var(--green-soft);color:var(--green)">KB</span><span class="st" style="background:var(--red-soft);color:var(--red)">Static</span><span class="st" style="background:var(--amber-soft);color:var(--amber)">API</span><span class="st" style="background:var(--purple-soft);color:var(--purple)">Web</span></div></div>
+        <div class="sl">Custom</div>
+        <div class="sc" data-sc="custom"><h3>Build Your Own</h3><p>Custom persona and rules.</p><div class="cia" id="cArea"><textarea class="ct" id="cPr" placeholder="Agent role, tone, domain..."></textarea><button class="ab" onclick="apCust()">Activate</button></div></div>
       </div>
-
-      <!-- Enterprise Chat -->
-      <div class="chat-widget" id="entChat">
-        <div class="cw-header">
-          <div class="cw-avatar" style="background:var(--accent-soft)">&#129302;</div>
-          <div class="cw-info"><h4 id="entAgentName">Telecom Support Agent</h4><span>&#9679; Online</span></div>
-          <button class="demo-btn" onclick="clearChat()" style="margin-left:auto;font-size:10px;padding:4px 10px">Clear</button>
-        </div>
-        <div class="cw-messages" id="entMessages"></div>
-        <div class="cw-input">
-          <textarea id="entInput" placeholder="Type your message..." rows="1" onkeydown="handleKey(event,'ent')"></textarea>
-          <button class="send-btn" id="entSend" onclick="sendMsg('ent')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
-        </div>
+      <div class="cw" id="entCw">
+        <div class="cw-h"><div class="cw-av" style="background:var(--accent-soft);color:var(--accent)">A</div><div class="cw-nfo"><h4 id="eAN">Telecom Support Agent</h4><span>Online</span></div><button class="db" onclick="clr('ent')" style="margin-left:auto;font-size:10px;padding:4px 10px">Clear</button></div>
+        <div class="cw-msg" id="entM"></div>
+        <div class="cw-in"><div class="att-pill" id="entAtt"><span id="entAttN"></span><span class="att-x" onclick="rmAtt('ent')">x</span></div><textarea id="entI" placeholder="Type your message..." rows="1" onkeydown="hk(event,'ent')"></textarea><button class="att-btn" onclick="pickF('ent')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg></button><button class="snd" id="entS" onclick="send('ent')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></div>
       </div>
-
-      <!-- Security Panel -->
-      <div class="security-panel">
-        <div class="security-panel-label">Security & Engine</div>
-        <div class="sec-card open">
-          <div class="sec-header" onclick="this.closest('.sec-card').classList.toggle('open')">
-            <div class="sec-icon" style="background:var(--red-soft)">&#128737;</div>
-            <div class="sec-title"><h4>Hallucination Prevention</h4><span>Static Data Engine</span></div>
-            <span class="sec-chevron">&#9654;</span>
-          </div>
-          <div class="sec-body"><div class="sec-content"><ul>
-            <li class="br">Critical facts never LLM-generated &mdash; injected from verified sources</li>
-            <li class="bg">Immutable reference layer cannot be overridden by prompt context</li>
-            <li class="ba">Response cross-validation against source-of-truth</li>
-          </ul></div></div>
-        </div>
-        <div class="sec-card">
-          <div class="sec-header" onclick="this.closest('.sec-card').classList.toggle('open')">
-            <div class="sec-icon" style="background:var(--accent-soft)">&#128274;</div>
-            <div class="sec-title"><h4>Data Separation</h4><span>Isolated Pipelines</span></div>
-            <span class="sec-chevron">&#9654;</span>
-          </div>
-          <div class="sec-body"><div class="sec-content"><ul>
-            <li class="bg">KB, Web, Static flow through isolated pipelines</li>
-            <li class="ba">External data sanitized before reaching LLM context</li>
-            <li class="bb">Source attribution on every response</li>
-          </ul></div></div>
-        </div>
-        <div class="sec-card">
-          <div class="sec-header" onclick="this.closest('.sec-card').classList.toggle('open')">
-            <div class="sec-icon" style="background:var(--amber-soft)">&#128272;</div>
-            <div class="sec-title"><h4>Auth & Access Tiers</h4><span>Public / SSO / RBAC</span></div>
-            <span class="sec-chevron">&#9654;</span>
-          </div>
-          <div class="sec-body"><div class="sec-content"><ul>
-            <li class="bg">Public: KB, FAQs &mdash; no auth</li>
-            <li class="ba">SSO: Internal docs, customer data</li>
-            <li class="br">RBAC: Admin data with role verification</li>
-          </ul></div></div>
-        </div>
-        <div class="sec-card">
-          <div class="sec-header" onclick="this.closest('.sec-card').classList.toggle('open')">
-            <div class="sec-icon" style="background:var(--green-soft)">&#128220;</div>
-            <div class="sec-title"><h4>Prompt Security</h4><span>Guardrails</span></div>
-            <span class="sec-chevron">&#9654;</span>
-          </div>
-          <div class="sec-body"><div class="sec-content"><ul>
-            <li class="br">Hard boundaries on forbidden actions</li>
-            <li class="bg">Immutable security templates</li>
-            <li class="bb">Injection-resistant architecture</li>
-          </ul></div></div>
-        </div>
-        <div class="sec-card">
-          <div class="sec-header" onclick="this.closest('.sec-card').classList.toggle('open')">
-            <div class="sec-icon" style="background:var(--purple-soft)">&#128301;</div>
-            <div class="sec-title"><h4>Validation Engine</h4><span>Pre-delivery</span></div>
-            <span class="sec-chevron">&#9654;</span>
-          </div>
-          <div class="sec-body"><div class="sec-content"><ul>
-            <li class="br">Output checked against reference data</li>
-            <li class="ba">Web claims flagged with confidence</li>
-            <li class="bg">Critical data must match or blocked</li>
-          </ul></div></div>
-        </div>
+      <div class="sp">
+        <div class="spl">Security & Engine</div>
+        <div class="sk o"><div class="sh" onclick="this.closest('.sk').classList.toggle('o')"><div class="si" style="background:var(--red-soft)">S</div><div class="sti"><h4>Hallucination Prevention</h4><span>Static Data Engine</span></div><span class="sv">&#9654;</span></div><div class="sy"><div class="sx"><ul><li class="br">Critical facts never LLM-generated - injected from verified sources</li><li class="bg">Immutable reference layer cannot be overridden</li><li class="ba">Response cross-validation against source-of-truth</li></ul></div></div></div>
+        <div class="sk"><div class="sh" onclick="this.closest('.sk').classList.toggle('o')"><div class="si" style="background:var(--accent-soft)">D</div><div class="sti"><h4>Data Separation</h4><span>Isolated Pipelines</span></div><span class="sv">&#9654;</span></div><div class="sy"><div class="sx"><ul><li class="bg">KB, Web, Static flow through isolated pipelines</li><li class="ba">External data sanitized before LLM context</li><li class="bb">Source attribution on every response</li></ul></div></div></div>
+        <div class="sk"><div class="sh" onclick="this.closest('.sk').classList.toggle('o')"><div class="si" style="background:var(--amber-soft)">A</div><div class="sti"><h4>Auth & Access Tiers</h4><span>Public / SSO / RBAC</span></div><span class="sv">&#9654;</span></div><div class="sy"><div class="sx"><ul><li class="bg">Public: KB, FAQs - no auth</li><li class="ba">SSO: Internal docs, customer data</li><li class="br">RBAC: Admin data with role verification</li></ul></div></div></div>
+        <div class="sk"><div class="sh" onclick="this.closest('.sk').classList.toggle('o')"><div class="si" style="background:var(--green-soft)">P</div><div class="sti"><h4>Prompt Security</h4><span>Guardrails</span></div><span class="sv">&#9654;</span></div><div class="sy"><div class="sx"><ul><li class="br">Hard boundaries on forbidden actions</li><li class="bg">Immutable security templates</li><li class="bb">Injection-resistant architecture</li></ul></div></div></div>
+        <div class="sk"><div class="sh" onclick="this.closest('.sk').classList.toggle('o')"><div class="si" style="background:var(--purple-soft)">V</div><div class="sti"><h4>Validation Engine</h4><span>Pre-delivery</span></div><span class="sv">&#9654;</span></div><div class="sy"><div class="sx"><ul><li class="br">Output checked against reference data</li><li class="ba">Web claims flagged with confidence</li><li class="bg">Critical data must match or blocked</li></ul></div></div></div>
       </div>
     </div>
+    <div class="ms"><div class="mc"><div class="mh"><div><h3>LLM Model Landscape</h3><span>Pricing & Quality</span></div><div class="mfl"><button class="mfb act" onclick="fM('all',this)">All</button><button class="mfb" onclick="fM('budget',this)">Budget</button><button class="mfb" onclick="fM('balanced',this)">Balanced</button><button class="mfb" onclick="fM('premium',this)">Premium</button></div></div><div class="mtw"><table class="mt2"><thead><tr><th>Model</th><th>Input/1M</th><th>Output/1M</th><th>Context</th><th>Quality</th><th>Best For</th><th>Trade-off</th></tr></thead><tbody id="mB"></tbody></table></div><div class="mn3">Prices Q2 2026. Caching & batch discounts (50-90%) not shown.</div></div></div>
+  </div>
 
-    <!-- Model Table -->
-    <div class="models-section">
-      <div class="models-container">
-        <div class="models-header">
-          <div><h3>LLM Model Landscape</h3><span>Pricing & Quality</span></div>
-          <div class="model-filters">
-            <button class="mf-btn active" onclick="filterM('all',this)">All</button>
-            <button class="mf-btn" onclick="filterM('budget',this)">Budget</button>
-            <button class="mf-btn" onclick="filterM('balanced',this)">Balanced</button>
-            <button class="mf-btn" onclick="filterM('premium',this)">Premium</button>
-          </div>
-        </div>
-        <div class="models-table-wrap"><table class="mt"><thead><tr>
-          <th>Model</th><th>Input/1M</th><th>Output/1M</th><th>Context</th><th>Quality</th><th>Best For</th><th>Trade-off</th>
-        </tr></thead><tbody id="mBody"></tbody></table></div>
-        <div class="models-note">Prices Q2 2026. Caching & batch discounts (50-90%) not shown.</div>
+  <!-- ═══ INDUSTRY VIEW ═══ -->
+  <div id="indView">
+    <div class="ind-hdr">
+      <div class="ind-brand"><div class="ind-logo" id="iL">F</div><div><h2 id="iC">FinanceFirst AG</h2><span id="iT">Digital Banking Assistant</span></div></div>
+      <div class="ind-auth"><button class="atb act" id="aPublic" onclick="auth('public')"><span id="aPubTxt">Neukunde</span></button><button class="atb" id="aSSO" onclick="auth('sso')"><span id="aSsoTxt">Kunde (SSO)</span></button></div>
+    </div>
+    <div class="ind-chat-wrap">
+      <div class="cw" id="indCw">
+        <div class="cw-h"><div class="cw-av" id="iAv">F</div><div class="cw-nfo"><h4 id="iAN">Banking Assistant</h4><span>Online</span></div><span class="cw-badge pub" id="iBdg">Public</span></div>
+        <div class="cw-msg" id="indM"></div>
+        <div class="cw-in"><div class="att-pill" id="indAtt"><span id="indAttN"></span><span class="att-x" onclick="rmAtt('ind')">x</span></div><textarea id="indI" placeholder="Your question..." rows="1" onkeydown="hk(event,'ind')"></textarea><button class="att-btn" onclick="pickF('ind')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg></button><button class="snd" id="indS" onclick="send('ind')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></div>
       </div>
     </div>
   </div>
 
-  <!-- ════════════════════════════════════════ -->
-  <!-- INDUSTRY VIEWS (Chat-Only, Branded)     -->
-  <!-- ════════════════════════════════════════ -->
-  <div id="industryView">
-    <div class="ind-page">
-      <div class="ind-header">
-        <div class="ind-brand">
-          <div class="ind-logo" id="indLogo">F</div>
-          <div class="ind-brand-text">
-            <h2 id="indCompany">FinanceFirst AG</h2>
-            <span id="indTagline">Digital Banking Assistant</span>
-          </div>
-        </div>
-        <div class="ind-auth" id="indAuthToggle">
-          <button class="auth-btn active" onclick="setAuth('public')"><span class="auth-icon">&#127760;</span> Neukunde</button>
-          <button class="auth-btn" onclick="setAuth('sso')"><span class="auth-icon">&#128274;</span> Kunde (SSO)</button>
-        </div>
+  <!-- SSO MODAL -->
+  <div class="sso-overlay" id="ssoOv">
+    <div class="sso-modal" id="ssoMod">
+      <div class="sso-logo" id="ssoLogo">F</div>
+      <h3 id="ssoTitle">Secure Login</h3>
+      <div id="ssoStep1">
+        <input class="sso-field" id="ssoUser" placeholder="Customer ID"><input class="sso-field" type="password" id="ssoPw" placeholder="Password">
+        <div class="sso-hint" id="ssoHint"><strong>Test credentials:</strong><br>ID: <strong>100-200-300</strong><br>Password: <strong>demo2026</strong></div>
+        <button class="sso-btn" onclick="ssoLogin()" id="ssoLoginBtn">Sign In</button>
       </div>
-
-      <div class="ind-body">
-        <div class="ind-info">
-          <div class="ind-info-card" id="indInfoCard">
-            <h3 id="indInfoTitle">Willkommen bei FinanceFirst</h3>
-            <p id="indInfoDesc">Unser AI-Assistent hilft Ihnen bei allgemeinen Fragen zu unseren Produkten und Services. Melden Sie sich an, um auf Ihre Kontodaten zuzugreifen.</p>
-            <div class="ind-features" id="indFeatures"></div>
-          </div>
-          <div class="ind-info-card">
-            <h3 id="indAccessTitle">Datenzugriff</h3>
-            <div id="indAccessInfo"></div>
-          </div>
+      <div id="ssoStep2" style="display:none">
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px" id="ssoSmsLabel">Verification code sent to your device</p>
+        <div class="sso-phone vis">
+          <div class="phone-frame"><div class="phone-notch"></div><div class="phone-sms"><div class="sms-from" id="ssoSmsFrom">FinanceFirst Security</div><div class="sms-body" id="ssoSmsBody">Your verification code:</div><div class="sms-code">4829</div></div></div>
         </div>
-
-        <!-- Industry Chat Widget -->
-        <div class="chat-widget" id="indChat">
-          <div class="cw-header">
-            <div class="cw-avatar" id="indAvatar">&#129302;</div>
-            <div class="cw-info"><h4 id="indAgentName">Banking Assistant</h4><span>&#9679; Online</span></div>
-            <span class="cw-auth-badge public" id="indAuthBadge">Public</span>
-          </div>
-          <div class="cw-messages" id="indMessages"></div>
-          <div class="cw-input">
-            <textarea id="indInput" placeholder="Ihre Frage..." rows="1" onkeydown="handleKey(event,'ind')"></textarea>
-            <button class="send-btn" id="indSend" onclick="sendMsg('ind')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
-          </div>
-        </div>
+        <div class="sso-code-wrap"><input class="sso-code-input" id="ssoCode" maxlength="4" placeholder="----"><div class="sso-hint" style="margin-top:10px"><strong>Test code: 4829</strong></div><button class="sso-btn" onclick="ssoVerify()" style="margin-top:10px" id="ssoVerifyBtn">Verify</button></div>
       </div>
     </div>
   </div>
 
-  <div class="demo-footer">
-    Built by Aytekin Uysal &middot; <a href="https://linkedin.com/in/aytekin-uysal" target="_blank">LinkedIn</a>
-  </div>
+  <input type="file" accept=".pdf" id="fileIn" style="display:none" onchange="onFile(event)">
+  <div class="demo-footer">Built by Aytekin Uysal &middot; <a href="https://linkedin.com/in/aytekin-uysal" target="_blank">LinkedIn</a></div>
 </div>
 
 <script>
-// ═══════════════════════════════════════
-// CONFIG
-// ═══════════════════════════════════════
-const PROXY_URL = 'https://ai-demo-proxy.auysal28.workers.dev';
-let currentView = 'enterprise';
-let currentLang = 'en';
-let currentScenario = 'telecom';
-let currentAuth = 'public';
-let currentIndustry = 'corporate';
-let convEnt = [];
-let convInd = [];
-let isLoading = false;
-let demoActive = true;
-let messageCount = 0;
-let apiMode = 'hosted';
-const MAX_MSG = 20;
+const PX='https://ai-demo-proxy.auysal28.workers.dev';
+let V='ent',L='en',SC='telecom',AU='public',IND='corporate',cEnt=[],cInd=[],load=false,dOn=true,mc=0,aM='hosted';
+const MX=20;
+function sid(){let s=localStorage.getItem('ds');if(!s){s='s_'+crypto.randomUUID();localStorage.setItem('ds',s);}return s;}
 
-function getSessionId() {
-  let s = localStorage.getItem('demo_sid');
-  if (!s) { s = 'sess_' + crypto.randomUUID(); localStorage.setItem('demo_sid', s); }
-  return s;
-}
-
-// ═══════════════════════════════════════
-// INDUSTRY CONFIGS
-// ═══════════════════════════════════════
-const industries = {
-  corporate: {
-    logo: 'F', company: 'FinanceFirst AG', tagline: 'Digital Banking Assistant',
-    agent: 'Banking Assistant', avatarBg: '#1a2332', avatarIcon: '&#128179;',
-    theme: {'--bg':'#0f1624','--surface':'#162032','--surface-2':'#1c2940','--surface-3':'#24334d','--border':'#2d3f5c','--text':'#e4e8f0','--text-muted':'#8b9ab8','--text-dim':'#5a6d8a','--accent':'#c9a84c','--accent-soft':'rgba(201,168,76,.12)','--accent-glow':'rgba(201,168,76,.06)','--user-bg':'#1e3054','--agent-bg':'var(--surface-2)','--heading-font':"Georgia,serif",'--radius':'10px'},
-    infoTitle: { en: 'Welcome to FinanceFirst', de: 'Willkommen bei FinanceFirst' },
-    infoDesc: {
-      en: 'Our AI assistant helps with general product questions. Sign in to access account data.',
-      de: 'Unser AI-Assistent hilft bei allgemeinen Produktfragen. Melden Sie sich an f\u00fcr Kontodaten.'
-    },
-    features: [
-      { color: 'var(--green)', text: { en: 'Account balance & transactions', de: 'Kontostand & Transaktionen' }},
-      { color: 'var(--amber)', text: { en: 'Investment portfolio overview', de: 'Anlageportfolio-\u00dcbersicht' }},
-      { color: 'var(--accent)', text: { en: 'Mortgage & loan calculator', de: 'Hypotheken- & Kreditrechner' }},
-      { color: 'var(--red)', text: { en: 'Fraud alert management', de: 'Betrugswarnungs-Management' }},
-    ],
-    publicSystem: `You are a banking assistant for FinanceFirst AG. You handle general inquiries from potential new customers. Be professional, trustworthy. You can discuss: account types (Savings 0.8% APY, Checking free, Premium CHF 9.90/mo), mortgage rates (from 1.4%), credit cards, opening hours (Mon-Fri 8-18h). NEVER reveal internal data, account balances, or personal info. Respond in the user's language.`,
-    ssoSystem: `You are a banking assistant for FinanceFirst AG, assisting an authenticated customer. You have access to their account info. Be professional, concise. You can discuss: account balance (simulated: CHF 12'450.80), recent transactions, standing orders, credit card statements, investment portfolio (simulated: CHF 45'200, +2.3% YTD). Respond in the user's language.`,
-    publicSuggestions: { en: ['What account types do you offer?','Current mortgage rates?','How do I open an account?'], de: ['Welche Kontoarten bieten Sie an?','Aktuelle Hypothekenzinsen?','Wie er\u00f6ffne ich ein Konto?'] },
-    ssoSuggestions: { en: ['Show my account balance','Recent transactions','My investment performance'], de: ['Zeig meinen Kontostand','Letzte Transaktionen','Meine Anlage-Performance'] },
+// ═══ INDUSTRIES ═══
+const I={
+  corporate:{
+    logo:'F',co:{en:'FinanceFirst AG',de:'FinanceFirst AG'},tag:{en:'Digital Banking Assistant',de:'Digitaler Banking-Assistent'},
+    ag:{en:'Banking Assistant',de:'Banking-Assistent'},avL:'F',
+    theme:{'--bg':'#0f1624','--surface':'#162032','--surface-2':'#1c2940','--surface-3':'#24334d','--border':'#2d3f5c','--text':'#e4e8f0','--text-muted':'#8b9ab8','--text-dim':'#5a6d8a','--accent':'#c9a84c','--accent-soft':'rgba(201,168,76,.12)','--accent-glow':'rgba(201,168,76,.06)','--user-bg':'#1e3054','--agent-bg':'var(--surface-2)','--heading-font':'Georgia,serif','--radius':'10px','--green':'#4ade80','--green-soft':'rgba(74,222,128,.12)','--amber':'#fbbf24','--amber-soft':'rgba(251,191,36,.12)','--red':'#f87171','--red-soft':'rgba(248,113,113,.12)'},
+    pubSys:`You are a banking assistant for FinanceFirst AG helping potential new customers. Professional, trustworthy tone.\nFORMATTING: Never use markdown asterisks or bold markers. Use clean structured text. For lists use dashes. For emphasis use CAPS sparingly. Structure: greeting, information, next steps. Keep formal banking tone.\nKNOWLEDGE: Account types (Savings 0.8% APY, Checking free, Premium CHF 9.90/mo), mortgage rates (from 1.4%), credit cards, hours Mon-Fri 8-18h.\nNEVER reveal internal data or account balances. Respond in the user's language.`,
+    ssoSys:`You are a banking assistant for FinanceFirst AG assisting an authenticated customer.\nFORMATTING: Never use markdown asterisks or bold markers. Use clean structured text. For lists use dashes. Structure data clearly with labels. Keep formal banking tone.\nACCOUNT DATA (simulated): Balance CHF 12,450.80. Recent: -CHF 85.00 Migros 03.04, -CHF 1,200.00 Rent 01.04, +CHF 5,800.00 Salary 28.03. Investment portfolio CHF 45,200 (+2.3% YTD). Standing orders: Rent CHF 1,200 on 1st, Insurance CHF 320 on 15th.\nRespond in the user's language.`,
+    pubSug:{en:['What account types do you offer?','Current mortgage rates?','How do I open an account?'],de:['Welche Kontoarten bieten Sie an?','Aktuelle Hypothekenzinsen?','Wie eroeffne ich ein Konto?']},
+    ssoSug:{en:['Show my account balance','Recent transactions','My investment performance'],de:['Zeig meinen Kontostand','Letzte Transaktionen','Meine Anlage-Performance']},
+    ssoFrom:{en:'FinanceFirst Security',de:'FinanceFirst Sicherheit'}
   },
-  government: {
-    logo: 'CH', company: 'Kanton Z\u00fcrich', tagline: 'Digitaler B\u00fcrgerservice',
-    agent: 'B\u00fcrgerservice Assistent', avatarBg: '#003366', avatarIcon: '&#127963;',
-    theme: {'--bg':'#f0f2f5','--surface':'#ffffff','--surface-2':'#f8f9fb','--surface-3':'#eef0f4','--border':'#d1d5db','--text':'#1a1a2e','--text-muted':'#4a4a6a','--text-dim':'#8888a0','--accent':'#003366','--accent-soft':'rgba(0,51,102,.08)','--accent-glow':'rgba(0,51,102,.04)','--green':'#16a34a','--green-soft':'rgba(22,163,74,.1)','--amber':'#d97706','--amber-soft':'rgba(217,119,6,.1)','--red':'#dc2626','--red-soft':'rgba(220,38,38,.1)','--user-bg':'#e0e7f0','--agent-bg':'var(--surface-2)','--heading-font':"-apple-system,sans-serif",'--radius':'8px'},
-    infoTitle: { en: 'Citizen Services', de: 'B\u00fcrgerservice' },
-    infoDesc: {
-      en: 'Get information about public services, forms, and appointments. Log in for personal case status.',
-      de: 'Informationen zu \u00f6ffentlichen Diensten, Formularen und Terminen. Anmelden f\u00fcr pers\u00f6nlichen Fallstatus.'
-    },
-    features: [
-      { color: 'var(--green)', text: { en: 'ID & passport renewal', de: 'Ausweis- & Passerneuerung' }},
-      { color: 'var(--amber)', text: { en: 'Building permits status', de: 'Baubewilligungs-Status' }},
-      { color: 'var(--accent)', text: { en: 'Tax filing assistance', de: 'Steuererkl\u00e4rungs-Hilfe' }},
-      { color: 'var(--red)', text: { en: 'Emergency services info', de: 'Notfalldienst-Informationen' }},
-    ],
-    publicSystem: `You are a digital citizen service assistant for Kanton Z\u00fcrich. Help with general public inquiries. Be formal, accurate, helpful. Topics: ID renewal (CHF 65, 10 working days), passport (CHF 140, 10 days), residence registration, tax deadlines (March 31), building permits, marriage registration. NEVER access personal case data without auth. Respond in the user's language.`,
-    ssoSystem: `You are a citizen service assistant for an authenticated resident of Kanton Z\u00fcrich. You can access their personal data. Topics: personal tax status (simulated: filed, refund CHF 1'240 pending), building permit #2024-0847 (status: approved), vehicle registration (valid until 2027-03). Be formal, precise. Respond in the user's language.`,
-    publicSuggestions: { en: ['How do I renew my ID?','Tax filing deadline?','Building permit process?'], de: ['Wie erneuere ich meinen Ausweis?','Steuererkl\u00e4rungsfrist?','Baubewilligungsverfahren?'] },
-    ssoSuggestions: { en: ['My tax refund status?','Building permit #2024-0847?','Vehicle registration renewal'], de: ['Mein Steuerr\u00fcckerstattungs-Status?','Baubewilligung #2024-0847?','Fahrzeugregistrierung erneuern'] },
+  government:{
+    logo:'ZH',co:{en:'Canton of Zurich',de:'Kanton Z\u00fcrich'},tag:{en:'Digital Citizen Services',de:'Digitaler B\u00fcrgerservice'},
+    ag:{en:'Citizen Service Assistant',de:'B\u00fcrgerservice-Assistent'},avL:'ZH',
+    theme:{'--bg':'#f0f2f5','--surface':'#ffffff','--surface-2':'#f8f9fb','--surface-3':'#eef0f4','--border':'#d1d5db','--text':'#1a1a2e','--text-muted':'#4a4a6a','--text-dim':'#8888a0','--accent':'#003366','--accent-soft':'rgba(0,51,102,.08)','--accent-glow':'rgba(0,51,102,.04)','--green':'#16a34a','--green-soft':'rgba(22,163,74,.1)','--amber':'#d97706','--amber-soft':'rgba(217,119,6,.1)','--red':'#dc2626','--red-soft':'rgba(220,38,38,.1)','--user-bg':'#e0e7f0','--agent-bg':'var(--surface-2)','--heading-font':"-apple-system,sans-serif",'--radius':'8px'},
+    pubSys:`You are a digital citizen service assistant for Canton of Zurich. Formal, accurate, helpful.\nFORMATTING: Never use markdown. Write in clear simple language. Use numbered lists for procedures. No decorations. Factual and direct.\nKNOWLEDGE: ID renewal CHF 65 (10 working days), passport CHF 140 (10 days), residence registration, tax deadline March 31, building permits, marriage registration.\nNEVER access personal case data. Respond in the user's language.`,
+    ssoSys:`You are a citizen service assistant for an authenticated resident of Canton of Zurich.\nFORMATTING: Never use markdown. Write clearly. Use numbered lists for procedures. Factual and direct.\nPERSONAL DATA (simulated): Tax status - filed, refund CHF 1,240 pending (est. 6 weeks). Building permit #2024-0847 - approved April 2. Vehicle registration - valid until 2027-03. Residence permit B - valid until 2028-12.\nRespond in the user's language.`,
+    pubSug:{en:['How do I renew my ID?','Tax filing deadline?','Building permit process?'],de:['Wie erneuere ich meinen Ausweis?','Steuererklaerungsfrist?','Baubewilligungsverfahren?']},
+    ssoSug:{en:['My tax refund status?','Building permit #2024-0847?','Vehicle registration renewal'],de:['Steuerrueckerstattungs-Status?','Baubewilligung #2024-0847?','Fahrzeugregistrierung erneuern']},
+    ssoFrom:{en:'Canton of Zurich eGov',de:'Kanton Z\u00fcrich eGov'}
   },
-  healthcare: {
-    logo: '+', company: 'MediCare Plus', tagline: 'Patient Services Portal',
-    agent: 'Health Assistant', avatarBg: '#d1fae5', avatarIcon: '&#9877;',
-    theme: {'--bg':'#f8fffe','--surface':'#ffffff','--surface-2':'#f0fdf9','--surface-3':'#e6f7f2','--border':'#c6e7dc','--text':'#1a2e28','--text-muted':'#4a6b60','--text-dim':'#88a89c','--accent':'#10b981','--accent-soft':'rgba(16,185,129,.1)','--accent-glow':'rgba(16,185,129,.05)','--green':'#059669','--green-soft':'rgba(5,150,105,.1)','--amber':'#d97706','--amber-soft':'rgba(217,119,6,.1)','--red':'#ef4444','--red-soft':'rgba(239,68,68,.1)','--user-bg':'#d1fae5','--agent-bg':'var(--surface-2)','--heading-font':"'DM Sans',sans-serif",'--radius':'16px'},
-    infoTitle: { en: 'Welcome to MediCare Plus', de: 'Willkommen bei MediCare Plus' },
-    infoDesc: {
-      en: 'Our assistant helps with general health service inquiries. Log in for appointment and medical records access.',
-      de: 'Unser Assistent hilft bei allgemeinen Gesundheitsfragen. Anmelden f\u00fcr Termin- und Patientenakten-Zugriff.'
-    },
-    features: [
-      { color: 'var(--green)', text: { en: 'Appointment scheduling', de: 'Terminvereinbarung' }},
-      { color: 'var(--amber)', text: { en: 'Lab results & prescriptions', de: 'Laborergebnisse & Rezepte' }},
-      { color: 'var(--accent)', text: { en: 'Insurance coverage check', de: 'Versicherungsdeckung pr\u00fcfen' }},
-      { color: 'var(--red)', text: { en: 'Emergency guidance', de: 'Notfall-Anleitung' }},
-    ],
-    publicSystem: `You are a health service assistant for MediCare Plus clinic. Help with general inquiries from potential patients. Be warm, professional, empathetic. Topics: services (General, Cardiology, Orthopedics, Dermatology), opening hours (Mon-Fri 7-19h, Sat 8-12h), appointment booking (call +41 44 123 45 67), emergency (call 144). NEVER give medical diagnoses. Respond in the user's language.`,
-    ssoSystem: `You are a health assistant for an authenticated patient at MediCare Plus. You have access to their records. Topics: next appointment (simulated: Dr. Weber, Cardiology, April 14 at 10:30), recent lab results (simulated: cholesterol 5.2 mmol/L - normal range), active prescriptions (Metformin 500mg), insurance (CSS, fully covered). Be empathetic, precise. Respond in the user's language.`,
-    publicSuggestions: { en: ['What specialties do you offer?','How to book an appointment?','Opening hours?'], de: ['Welche Fachgebiete bieten Sie?','Wie buche ich einen Termin?','Sprechzeiten?'] },
-    ssoSuggestions: { en: ['My next appointment?','Recent lab results?','Active prescriptions?'], de: ['Mein n\u00e4chster Termin?','Aktuelle Laborergebnisse?','Aktive Rezepte?'] },
+  healthcare:{
+    logo:'M+',co:{en:'MediCare Plus',de:'MediCare Plus'},tag:{en:'Patient Services Portal',de:'Patienten-Serviceportal'},
+    ag:{en:'Health Assistant',de:'Gesundheits-Assistent'},avL:'M+',
+    theme:{'--bg':'#f8fffe','--surface':'#ffffff','--surface-2':'#f0fdf9','--surface-3':'#e6f7f2','--border':'#c6e7dc','--text':'#1a2e28','--text-muted':'#4a6b60','--text-dim':'#88a89c','--accent':'#10b981','--accent-soft':'rgba(16,185,129,.1)','--accent-glow':'rgba(16,185,129,.05)','--green':'#059669','--green-soft':'rgba(5,150,105,.1)','--amber':'#d97706','--amber-soft':'rgba(217,119,6,.1)','--red':'#ef4444','--red-soft':'rgba(239,68,68,.1)','--user-bg':'#d1fae5','--agent-bg':'var(--surface-2)','--heading-font':"'DM Sans',sans-serif",'--radius':'16px'},
+    pubSys:`You are a health service assistant for MediCare Plus clinic. Warm, professional, empathetic.\nFORMATTING: Never use markdown asterisks. Use plain text. For important medical values write them clearly on their own line with labels. Structure with line breaks for readability. Mark important information by writing it clearly, not with asterisks.\nKNOWLEDGE: Specialties - General Medicine, Cardiology, Orthopedics, Dermatology. Hours Mon-Fri 7-19h, Sat 8-12h. Booking: +41 44 123 45 67. Emergency: 144.\nNEVER give medical diagnoses. Respond in the user's language.`,
+    ssoSys:`You are a health assistant for an authenticated patient at MediCare Plus.\nFORMATTING: Never use markdown asterisks. Use plain text. Write medical values clearly on separate lines with labels. Important values should be written plainly. Use line breaks for structure.\nPATIENT DATA (simulated): Next appointment - Dr. Weber, Cardiology, April 14 at 10:30. Lab results (March 28) - Cholesterol: 5.2 mmol/L (normal range), Blood sugar: 6.1 mmol/L (slightly elevated), Blood pressure: 128/82 mmHg. Active prescriptions - Metformin 500mg twice daily, Lisinopril 10mg once daily. Insurance - CSS, fully covered.\nRespond in the user's language.`,
+    pubSug:{en:['What specialties do you offer?','How to book an appointment?','Opening hours?'],de:['Welche Fachgebiete bieten Sie?','Wie buche ich einen Termin?','Sprechzeiten?']},
+    ssoSug:{en:['My next appointment?','Recent lab results?','Active prescriptions?'],de:['Mein naechster Termin?','Aktuelle Laborergebnisse?','Aktive Rezepte?']},
+    ssoFrom:{en:'MediCare Plus Verify',de:'MediCare Plus Verifizierung'}
   }
 };
 
-// ═══════════════════════════════════════
-// ENTERPRISE SCENARIOS
-// ═══════════════════════════════════════
-const scenarios = {
-  telecom: {
-    name:'Telecom Support Agent',
-    system:`You are Ava from ConnectMobile (Swiss mobile provider). Be friendly, concise. Plans: Basic CHF 19.90/5GB, Smart CHF 34.90/20GB, Unlimited CHF 54.90. eSIM: Settings>Mobile>Add eSIM>Scan QR. Roaming: EU in Smart/Unlimited. Never invent account data. 2-4 sentences. Respond in user's language.`,
-    suggestions:{en:['My bill seems too high','How do I activate eSIM?','Change my plan'],de:['Meine Rechnung ist zu hoch','Wie aktiviere ich eSIM?','Tarif wechseln']},
-    sources:['kb','static','api']
-  },
-  saas: {
-    name:'SaaS Onboarding Agent',
-    system:`You are Max from FlowBoard (project management SaaS). Enthusiastic, step-by-step. Features: Kanban, Gantt, Chat, Integrations. Pricing: Starter free, Pro $12/user/mo. Max 3-4 sentences. Respond in user's language.`,
-    suggestions:{en:['Just signed up, what first?','Invite my team?','Connect Slack?'],de:['Gerade registriert, was zuerst?','Team einladen?','Slack verbinden?']},
-    sources:['kb','web']
-  },
-  ecommerce: {
-    name:'E-Commerce Advisor',
-    system:`You are Elsa from NordStyle (Scandinavian furniture). Warm, taste-conscious. Bestsellers: Birch Chair CHF 890, Hygge Sofa CHF 2400, Fjord Lamp CHF 189. Free shipping over CHF 150. 15% off lighting with LIGHTUP. Max 3 recs. Respond in user's language.`,
-    suggestions:{en:['Desk for small office?',"What's trending?",'Under CHF 200?'],de:['Schreibtisch f\u00fcrs B\u00fcro?','Was ist im Trend?','Unter CHF 200?']},
-    sources:['kb','static','api','web']
-  },
-  custom: {
-    name:'Custom Agent', system:'',
-    suggestions:{en:['What can you do?','Tell me about yourself','How can you help?'],de:['Was kannst du?','Erz\u00e4hl \u00fcber dich','Wie kannst du helfen?']},
-    sources:['kb']
-  }
+// ═══ ENTERPRISE SCENARIOS ═══
+const S={
+  telecom:{name:'Telecom Support Agent',sys:`You are Ava from ConnectMobile (Swiss mobile). Friendly, concise.\nFORMATTING: Never use markdown asterisks or bold markers. Use plain structured text. For lists use dashes.\nPlans: Basic CHF 19.90/5GB, Smart CHF 34.90/20GB, Unlimited CHF 54.90. eSIM: Settings>Mobile>Add eSIM>Scan QR. Roaming: EU in Smart/Unlimited. Never invent account data. 2-4 sentences. Respond in user's language.`,sug:{en:['My bill seems too high','How do I activate eSIM?','Change my plan'],de:['Meine Rechnung ist zu hoch','Wie aktiviere ich eSIM?','Tarif wechseln']},src:['kb','static','api']},
+  saas:{name:'SaaS Onboarding Agent',sys:`You are Max from FlowBoard (project management SaaS). Enthusiastic, step-by-step.\nFORMATTING: Never use markdown asterisks. Use plain text with numbered steps.\nFeatures: Kanban, Gantt, Chat, Integrations. Pricing: Starter free, Pro $12/user/mo. Max 3-4 sentences. Respond in user's language.`,sug:{en:['Just signed up, what first?','Invite my team?','Connect Slack?'],de:['Gerade registriert, was zuerst?','Team einladen?','Slack verbinden?']},src:['kb','web']},
+  ecommerce:{name:'E-Commerce Advisor',sys:`You are Elsa from NordStyle (Scandinavian furniture). Warm, taste-conscious.\nFORMATTING: Never use markdown asterisks. Use plain structured text with dashes for product lists.\nBestsellers: Birch Chair CHF 890, Hygge Sofa CHF 2400, Fjord Lamp CHF 189. Free shipping over CHF 150. 15% off lighting LIGHTUP. Max 3 recs. Respond in user's language.`,sug:{en:['Desk for small office?',"What's trending?",'Under CHF 200?'],de:['Schreibtisch fuers Buero?','Was ist im Trend?','Unter CHF 200?']},src:['kb','static','api','web']},
+  custom:{name:'Custom Agent',sys:'',sug:{en:['What can you do?','Tell me about yourself','How can you help?'],de:['Was kannst du?','Erzaehl ueber dich','Wie kannst du helfen?']},src:['kb']}
 };
 
-// ═══════════════════════════════════════
-// VIEW SWITCHING
-// ═══════════════════════════════════════
-function switchView(view) {
-  currentView = view;
-  document.querySelectorAll('.view-btn').forEach(b => b.classList.toggle('active', b.textContent.toLowerCase().includes(view === 'enterprise' ? 'enterprise' : view === 'corporate' ? 'corporate' : view === 'government' ? 'staat' : 'gesund')));
+// ═══ VIEW SWITCH ═══
+const modTheme={'--bg':'#08090a','--surface':'#111214','--surface-2':'#191a1d','--surface-3':'#212225','--border':'#2a2b2f','--text':'#e8e8ec','--text-muted':'#7c7c86','--text-dim':'#55555e','--accent':'#3b82f6','--accent-soft':'rgba(59,130,246,.12)','--accent-glow':'rgba(59,130,246,.06)','--green':'#22c55e','--green-soft':'rgba(34,197,94,.12)','--amber':'#f59e0b','--amber-soft':'rgba(245,158,11,.12)','--red':'#ef4444','--red-soft':'rgba(239,68,68,.12)','--purple':'#a855f7','--purple-soft':'rgba(168,85,247,.12)','--user-bg':'#1e293b','--agent-bg':'var(--surface-2)','--heading-font':"'Instrument Serif',serif",'--radius':'14px'};
 
-  const root = document.documentElement;
-  if (view === 'enterprise') {
-    document.getElementById('enterpriseView').style.display = 'block';
-    document.getElementById('industryView').style.display = 'none';
-    // Reset to modern theme
-    const modern = {'--bg':'#08090a','--surface':'#111214','--surface-2':'#191a1d','--surface-3':'#212225','--border':'#2a2b2f','--text':'#e8e8ec','--text-muted':'#7c7c86','--text-dim':'#55555e','--accent':'#3b82f6','--accent-soft':'rgba(59,130,246,.12)','--accent-glow':'rgba(59,130,246,.06)','--green':'#22c55e','--green-soft':'rgba(34,197,94,.12)','--amber':'#f59e0b','--amber-soft':'rgba(245,158,11,.12)','--red':'#ef4444','--red-soft':'rgba(239,68,68,.12)','--purple':'#a855f7','--purple-soft':'rgba(168,85,247,.12)','--user-bg':'#1e293b','--agent-bg':'var(--surface-2)','--heading-font':"'Instrument Serif',serif",'--radius':'14px'};
-    Object.entries(modern).forEach(([k,v]) => root.style.setProperty(k,v));
+function go(v){
+  V=v;
+  document.querySelectorAll('.vb').forEach(b=>b.classList.remove('active'));
+  if(v==='ent')document.getElementById('vEnt').classList.add('active');
+  else if(v==='corporate')document.getElementById('vCorp').classList.add('active');
+  else if(v==='government')document.getElementById('vGov').classList.add('active');
+  else document.getElementById('vHc').classList.add('active');
+  const r=document.documentElement;
+  if(v==='ent'){
+    document.getElementById('entView').style.display='block';document.getElementById('indView').style.display='none';
+    Object.entries(modTheme).forEach(([k,val])=>r.style.setProperty(k,val));
   } else {
-    document.getElementById('enterpriseView').style.display = 'none';
-    document.getElementById('industryView').style.display = 'block';
-    currentIndustry = view;
-    const ind = industries[view];
-    Object.entries(ind.theme).forEach(([k,v]) => root.style.setProperty(k,v));
-    setupIndustry(view);
+    document.getElementById('entView').style.display='none';document.getElementById('indView').style.display='block';
+    IND=v;AU='public';const ind=I[v];
+    Object.entries(ind.theme).forEach(([k,val])=>r.style.setProperty(k,val));
+    setupInd();
   }
 }
 
-function setupIndustry(key) {
-  const ind = industries[key];
-  const lang = currentLang;
-  document.getElementById('indLogo').textContent = ind.logo;
-  document.getElementById('indLogo').style.background = ind.theme['--accent-soft'];
-  document.getElementById('indLogo').style.color = ind.theme['--accent'];
-  document.getElementById('indCompany').textContent = ind.company;
-  document.getElementById('indTagline').textContent = ind.tagline;
-  document.getElementById('indAgentName').textContent = ind.agent;
-  document.getElementById('indAvatar').innerHTML = ind.avatarIcon;
-  document.getElementById('indAvatar').style.background = ind.theme['--accent-soft'];
-  document.getElementById('indInfoTitle').textContent = ind.infoTitle[lang] || ind.infoTitle.de;
-  document.getElementById('indInfoDesc').textContent = ind.infoDesc[lang] || ind.infoDesc.de;
-  document.getElementById('indAccessTitle').textContent = currentAuth === 'public' ? (lang==='de'?'\u00d6ffentlicher Zugang':'Public Access') : (lang==='de'?'Authentifizierter Zugang':'Authenticated Access');
-
-  const accessHtml = currentAuth === 'public'
-    ? `<div class="ind-features"><div class="ind-feat"><span class="ind-feat-dot" style="background:var(--green)"></span>${lang==='de'?'Allgemeine Produktinfos':'General product info'}</div><div class="ind-feat"><span class="ind-feat-dot" style="background:var(--green)"></span>${lang==='de'?'FAQs & Hilfe-Artikel':'FAQs & help articles'}</div><div class="ind-feat"><span class="ind-feat-dot" style="background:var(--red)"></span>${lang==='de'?'Keine pers\u00f6nlichen Daten':'No personal data access'}</div></div>`
-    : `<div class="ind-features"><div class="ind-feat"><span class="ind-feat-dot" style="background:var(--green)"></span>${lang==='de'?'Kontodaten & Verlauf':'Account data & history'}</div><div class="ind-feat"><span class="ind-feat-dot" style="background:var(--green)"></span>${lang==='de'?'Personalisierte Empfehlungen':'Personalized recommendations'}</div><div class="ind-feat"><span class="ind-feat-dot" style="background:var(--amber)"></span>${lang==='de'?'SSO-authentifiziert':'SSO authenticated'}</div></div>`;
-  document.getElementById('indAccessInfo').innerHTML = accessHtml;
-
-  const features = document.getElementById('indFeatures');
-  features.innerHTML = ind.features.map(f => `<div class="ind-feat"><span class="ind-feat-dot" style="background:${f.color}"></span>${f.text[lang]||f.text.de}</div>`).join('');
-
-  // Reset chat
-  convInd = [];
-  loadWelcome('ind');
+function setupInd(){
+  const ind=I[IND];
+  document.getElementById('iL').textContent=ind.logo;document.getElementById('iL').style.background=ind.theme['--accent-soft'];document.getElementById('iL').style.color=ind.theme['--accent'];
+  document.getElementById('iC').textContent=ind.co[L];document.getElementById('iT').textContent=ind.tag[L];
+  document.getElementById('iAN').textContent=ind.ag[L];
+  document.getElementById('iAv').textContent=ind.avL;document.getElementById('iAv').style.background=ind.theme['--accent-soft'];document.getElementById('iAv').style.color=ind.theme['--accent'];
+  document.getElementById('aPubTxt').textContent=L==='de'?'Neukunde':'New Customer';
+  document.getElementById('aSsoTxt').textContent=L==='de'?'Kunde (SSO)':'Customer (SSO)';
+  document.getElementById('aPublic').className='atb'+(AU==='public'?' act':'');
+  document.getElementById('aSSO').className='atb'+(AU==='sso'?' act':'');
+  const bdg=document.getElementById('iBdg');bdg.textContent=AU==='public'?'Public':'SSO';bdg.className='cw-badge '+(AU==='public'?'pub':'sso');
+  document.getElementById('indI').placeholder=L==='de'?'Ihre Frage...':'Your question...';
+  cInd=[];wel('ind');
 }
 
-function setAuth(mode) {
-  currentAuth = mode;
-  document.querySelectorAll('.auth-btn').forEach(b => {
-    const isPublic = b.textContent.includes('Neukunde') || b.textContent.includes('New');
-    b.classList.toggle('active', (mode==='public') === isPublic);
-  });
-  const badge = document.getElementById('indAuthBadge');
-  badge.textContent = mode === 'public' ? 'Public' : 'SSO';
-  badge.className = 'cw-auth-badge ' + mode;
-  convInd = [];
-  setupIndustry(currentIndustry);
+function auth(m){
+  if(m==='sso'&&AU!=='sso'){showSSO();return;}
+  AU=m;setupInd();
 }
 
-// ═══════════════════════════════════════
-// CHAT ENGINE (shared)
-// ═══════════════════════════════════════
-function esc(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
-
-function getSourceBadges(sc, text) {
-  const s = scenarios[sc]; if (!s) return [{ cls:'src-kb', label:'KB' }];
-  const badges = []; const t = text.toLowerCase();
-  if (s.sources.includes('kb')) badges.push({ cls:'src-kb', label:'KB' });
-  if (s.sources.includes('static') && t.match(/bill|price|plan|cost|chf|shipping|return|tarif|rechnung|preis/)) badges.push({ cls:'src-static', label:'Static' });
-  if (s.sources.includes('api') && t.match(/account|order|status|track|konto|bestell/)) badges.push({ cls:'src-api', label:'API' });
-  if (s.sources.includes('web') && t.match(/trend|latest|slack|github|integrat|connect|neu/)) badges.push({ cls:'src-web', label:'Web' });
-  return badges.length ? badges : [{ cls:'src-kb', label:'KB' }];
+// ═══ SSO MODAL ═══
+function showSSO(){
+  const ind=I[IND];
+  document.getElementById('ssoLogo').textContent=ind.logo;document.getElementById('ssoLogo').style.background=ind.theme['--accent-soft'];document.getElementById('ssoLogo').style.color=ind.theme['--accent'];
+  document.getElementById('ssoTitle').textContent=L==='de'?'Sicherer Login':'Secure Login';
+  document.getElementById('ssoUser').placeholder=L==='de'?'Kundennummer':'Customer ID';
+  document.getElementById('ssoPw').placeholder=L==='de'?'Passwort':'Password';
+  document.getElementById('ssoHint').innerHTML=`<strong>${L==='de'?'Testzugangsdaten':'Test credentials'}:</strong><br>ID: <strong>100-200-300</strong><br>${L==='de'?'Passwort':'Password'}: <strong>demo2026</strong>`;
+  document.getElementById('ssoLoginBtn').textContent=L==='de'?'Anmelden':'Sign In';
+  document.getElementById('ssoStep1').style.display='block';document.getElementById('ssoStep2').style.display='none';
+  document.getElementById('ssoUser').value='';document.getElementById('ssoPw').value='';document.getElementById('ssoCode').value='';
+  document.getElementById('ssoOv').classList.add('vis');
 }
 
-function addMsg(target, text, role) {
-  const msgs = document.getElementById(target + 'Messages');
-  const w = msgs.querySelector('.welcome'); if (w) w.remove();
-  const d = document.createElement('div'); d.className = `message ${role}`; d.textContent = text;
-  msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight;
+function ssoLogin(){
+  document.getElementById('ssoStep1').style.display='none';document.getElementById('ssoStep2').style.display='block';
+  const ind=I[IND];
+  document.getElementById('ssoSmsLabel').textContent=L==='de'?'Verifizierungscode an Ihr Geraet gesendet':'Verification code sent to your device';
+  document.getElementById('ssoSmsFrom').textContent=ind.ssoFrom[L];
+  document.getElementById('ssoSmsBody').textContent=L==='de'?'Ihr Verifizierungscode:':'Your verification code:';
+  document.getElementById('ssoVerifyBtn').textContent=L==='de'?'Bestaetigen':'Verify';
 }
 
-function addSys(target, text) {
-  const msgs = document.getElementById(target + 'Messages');
-  const w = msgs.querySelector('.welcome'); if (w) w.remove();
-  const d = document.createElement('div'); d.className = 'message system'; d.textContent = text;
-  msgs.appendChild(d);
+function ssoVerify(){
+  document.getElementById('ssoOv').classList.remove('vis');
+  AU='sso';setupInd();
 }
 
-function addBadges(target, badges) {
-  const msgs = document.getElementById(target + 'Messages');
-  const c = document.createElement('div'); c.className = 'source-badges';
-  badges.forEach((b,i) => { const s = document.createElement('span'); s.className = `src-badge ${b.cls}`; s.textContent = `\u2713 ${b.label}`; c.appendChild(s); setTimeout(() => s.classList.add('visible'), (i+1)*150); });
-  msgs.appendChild(c); msgs.scrollTop = msgs.scrollHeight;
+// ═══ LANG ═══
+function lang(l){
+  L=l;document.querySelectorAll('.lb').forEach(b=>b.classList.toggle('active',b.textContent===l.toUpperCase()));
+  if(V==='ent'){
+    document.getElementById('hBadge').textContent=l==='de'?'Live AI-Agent Demo':'Live AI Agent Demo';
+    document.getElementById('hTitle').textContent=l==='de'?'AI-Agent Architektur':'AI Agent Architecture';
+    document.getElementById('hDesc').textContent=l==='de'?'Sehen Sie wie ein produktionsreifer AI-Agent Daten routet, Antworten validiert und Halluzinationen verhindert. Waehlen Sie ein Szenario und testen Sie live.':'See how a production-grade AI agent routes data, validates responses, and prevents hallucinations. Choose a scenario and test it live.';
+    document.getElementById('gT').textContent=l==='de'?'Vollstaendige Architektur freischalten':'Unlock Full Architecture View';
+    document.getElementById('gD').textContent=l==='de'?'Datenpipeline, Sicherheitsebenen und Validierungs-Engine einsehen. Email fuer Zugang eingeben.':'See the complete data pipeline, security layers, and validation engine. Enter your email for access.';
+    document.getElementById('gB').textContent=l==='de'?'Zugang erhalten':'Get Access';
+    document.getElementById('entI').placeholder=l==='de'?'Ihre Nachricht...':'Type your message...';
+    wel('ent');
+  } else { setupInd(); }
 }
 
-function showTyping(target) {
-  const msgs = document.getElementById(target + 'Messages');
-  const d = document.createElement('div'); d.className = 'typing-indicator'; d.id = target+'Typing';
-  d.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
-  msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight;
+// ═══ CHAT ENGINE ═══
+function esc(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+function getBdg(sc,t){const s=S[sc];if(!s)return[{c:'s-kb',l:'KB'}];const b=[];const x=t.toLowerCase();if(s.src.includes('kb'))b.push({c:'s-kb',l:'KB'});if(s.src.includes('static')&&x.match(/bill|price|plan|cost|chf|ship|return|tarif|rechn|preis/))b.push({c:'s-st',l:'Static'});if(s.src.includes('api')&&x.match(/account|order|status|track|konto|bestell/))b.push({c:'s-api',l:'API'});if(s.src.includes('web')&&x.match(/trend|latest|slack|github|integrat|connect|neu/))b.push({c:'s-web',l:'Web'});return b.length?b:[{c:'s-kb',l:'KB'}];}
+
+function addM(tg,txt,r){const ms=document.getElementById(tg+'M');const w=ms.querySelector('.welcome');if(w)w.remove();const d=document.createElement('div');d.className='msg '+(r==='user'?'u':r==='agent'?'ag':'sys');d.textContent=txt;ms.appendChild(d);ms.scrollTop=ms.scrollHeight;}
+function addBdg(tg,bg){const ms=document.getElementById(tg+'M');const c=document.createElement('div');c.className='srb';bg.forEach((b,i)=>{const s=document.createElement('span');s.className=b.c;s.textContent='\u2713 '+b.l;c.appendChild(s);setTimeout(()=>s.classList.add('v'),(i+1)*150);});ms.appendChild(c);ms.scrollTop=ms.scrollHeight;}
+function showT(tg){const ms=document.getElementById(tg+'M');const d=document.createElement('div');d.className='ti';d.id=tg+'T';d.innerHTML='<div class="td"></div><div class="td"></div><div class="td"></div>';ms.appendChild(d);ms.scrollTop=ms.scrollHeight;}
+function hideT(tg){const e=document.getElementById(tg+'T');if(e)e.remove();}
+
+function wel(tg){
+  const ms=document.getElementById(tg+'M');ms.innerHTML='';
+  let sg=[];
+  if(tg==='ent'){sg=S[SC].sug[L]||S[SC].sug.en;}
+  else{const ind=I[IND];sg=AU==='public'?(ind.pubSug[L]||ind.pubSug.en):(ind.ssoSug[L]||ind.ssoSug.en);}
+  const w=document.createElement('div');w.className='welcome';
+  w.innerHTML=`<h3>${L==='de'?'Starten Sie ein Gespraech':'Start a conversation'}</h3><p>${L==='de'?'Nachricht eingeben oder Vorschlag waehlen.':'Type a message or pick a suggestion.'}</p><div class="sgc">${sg.map(s=>`<div class="sg" onclick="sgC('${tg}',this)">${esc(s)}</div>`).join('')}</div>`;
+  ms.appendChild(w);
 }
 
-function hideTyping(target) { const e = document.getElementById(target+'Typing'); if (e) e.remove(); }
+function sgC(tg,el){document.getElementById(tg+'I').value=el.textContent;send(tg);}
+function hk(e,tg){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send(tg);}}
 
-function loadWelcome(target) {
-  const msgs = document.getElementById(target + 'Messages');
-  msgs.innerHTML = '';
-  let sugs = [];
-  if (target === 'ent') {
-    sugs = scenarios[currentScenario].suggestions[currentLang] || scenarios[currentScenario].suggestions.en;
-  } else {
-    const ind = industries[currentIndustry];
-    sugs = currentAuth === 'public' ? (ind.publicSuggestions[currentLang] || ind.publicSuggestions.de) : (ind.ssoSuggestions[currentLang] || ind.ssoSuggestions.de);
-  }
-  const w = document.createElement('div'); w.className = 'welcome';
-  w.innerHTML = `<div class="wi">&#128172;</div><h3>${currentLang==='de'?'Starten Sie ein Gespr\u00e4ch':'Start a conversation'}</h3><p>${currentLang==='de'?'Nachricht eingeben oder Vorschlag w\u00e4hlen.':'Type a message or pick a suggestion.'}</p><div class="suggestion-chips">${sugs.map(s => `<div class="sug" onclick="sendSug('${target}',this)">${esc(s)}</div>`).join('')}</div>`;
-  msgs.appendChild(w);
+// PDF attachment
+let attFile={ent:null,ind:null};let attTarget=null;
+function pickF(tg){attTarget=tg;document.getElementById('fileIn').click();}
+function onFile(e){const f=e.target.files[0];if(!f)return;attFile[attTarget]=f;document.getElementById(attTarget+'AttN').textContent=f.name;document.getElementById(attTarget+'Att').classList.add('vis');e.target.value='';}
+function rmAtt(tg){attFile[tg]=null;document.getElementById(tg+'Att').classList.remove('vis');}
+
+async function send(tg){
+  const inp=document.getElementById(tg+'I');const txt=inp.value.trim();
+  if(!txt||load)return;if(tg==='ent'&&!dOn)return;
+  if(aM==='hosted'&&mc>=MX){addM(tg,'Session limit reached.','sys');return;}
+  inp.value='';inp.style.height='auto';
+  let msg=txt;
+  if(attFile[tg]){msg+=`\n[PDF attached: ${attFile[tg].name}]`;rmAtt(tg);}
+  addM(tg,msg,'user');
+  const cv=tg==='ent'?cEnt:cInd;cv.push({role:'user',content:msg});
+  load=true;document.getElementById(tg+'S').disabled=true;showT(tg);
+  let sys;let bdg=[];
+  if(tg==='ent'){sys=S[SC].sys||'You are a helpful assistant.';bdg=getBdg(SC,txt);}
+  else{const ind=I[IND];sys=AU==='public'?ind.pubSys:ind.ssoSys;bdg=AU==='public'?[{c:'s-kb',l:'KB'}]:[{c:'s-kb',l:'KB'},{c:'s-api',l:'API'}];}
+  try{
+    let res;
+    if(aM==='byok'){res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':document.getElementById('bkI').value.trim(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:sys,messages:cv})});}
+    else{res=await fetch(`${PX}/chat`,{method:'POST',headers:{'Content-Type':'application/json','X-Session-ID':sid()},body:JSON.stringify({system:sys,messages:cv})});}
+    const d=await res.json();hideT(tg);
+    if(d.content&&d.content.length>0){const rp=d.content.map(c=>c.text||'').join('');addM(tg,rp,'agent');addBdg(tg,bdg);cv.push({role:'assistant',content:rp});mc++;updR();}
+    else if(d.error)addM(tg,'Error: '+d.error.message,'sys');
+  }catch(e){hideT(tg);addM(tg,'Connection error.','sys');console.error(e);}
+  load=false;document.getElementById(tg+'S').disabled=false;inp.focus();
 }
 
-function sendSug(target, el) {
-  document.getElementById(target + 'Input').value = el.textContent;
-  sendMsg(target);
-}
+// ═══ ENTERPRISE CONTROLS ═══
+function togDemo(){dOn=!dOn;document.getElementById('sDot').className='sd '+(dOn?'a':'p');document.getElementById('sTxt').textContent=dOn?'Demo Active':'Paused';document.getElementById('tBtn').textContent=dOn?'Deactivate':'Reactivate';document.getElementById('tBtn').className='db '+(dOn?'dng':'pri');document.getElementById('entCw').classList.toggle('chat-off',!dOn);}
+function togBk(){document.getElementById('bkA').classList.toggle('vis');}
+function actBk(){if(document.getElementById('bkI').value.trim().startsWith('sk-ant-')){aM='byok';document.getElementById('bkA').classList.remove('vis');addM('ent','BYOK active','sys');}}
+function updR(){document.getElementById('rLim').textContent=`${MX-mc}/${MX}`;}
+async function reqAcc(){const e=document.getElementById('gE').value.trim();if(!e||!e.includes('@'))return;try{await fetch(`${PX}/lead`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e})});}catch(x){}document.getElementById('eGate').innerHTML='<div style="font-size:24px;color:var(--green)">&#10003;</div><h3 style="color:var(--green)">'+(L==='de'?'Zugang gewaehrt! Pruefen Sie Ihre Email.':'Access granted! Check your email.')+'</h3>';}
+document.querySelectorAll('.sc').forEach(c=>{c.addEventListener('click',()=>{const s=c.dataset.sc;document.querySelectorAll('.sc').forEach(x=>x.classList.remove('act'));c.classList.add('act');if(s==='custom'){document.getElementById('cArea').classList.add('vis');return;}document.getElementById('cArea').classList.remove('vis');SC=s;cEnt=[];document.getElementById('eAN').textContent=S[s].name;wel('ent');});});
+function apCust(){const p=document.getElementById('cPr').value.trim();if(!p)return;S.custom.sys=p;SC='custom';cEnt=[];document.getElementById('eAN').textContent='Custom Agent';wel('ent');}
+function clr(tg){if(tg==='ent')cEnt=[];else cInd=[];wel(tg);}
+['entI','indI'].forEach(id=>{document.getElementById(id).addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px';});});
 
-function handleKey(e, target) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(target); } }
-
-async function sendMsg(target) {
-  const input = document.getElementById(target + 'Input');
-  const text = input.value.trim();
-  if (!text || isLoading) return;
-  if (target === 'ent' && !demoActive) return;
-  if (apiMode === 'hosted' && messageCount >= MAX_MSG) { addSys(target, 'Session limit reached.'); return; }
-
-  input.value = ''; input.style.height = 'auto';
-  addMsg(target, text, 'user');
-  const conv = target === 'ent' ? convEnt : convInd;
-  conv.push({ role: 'user', content: text });
-
-  isLoading = true;
-  document.getElementById(target + 'Send').disabled = true;
-  showTyping(target);
-
-  let system;
-  let badges = [];
-  if (target === 'ent') {
-    system = scenarios[currentScenario].system || 'You are a helpful assistant.';
-    badges = getSourceBadges(currentScenario, text);
-  } else {
-    const ind = industries[currentIndustry];
-    system = currentAuth === 'public' ? ind.publicSystem : ind.ssoSystem;
-    badges = currentAuth === 'public' ? [{ cls:'src-kb', label:'KB' }] : [{ cls:'src-kb', label:'KB' },{ cls:'src-api', label:'API' }];
-  }
-
-  try {
-    let response;
-    if (apiMode === 'byok') {
-      response = await fetch('https://api.anthropic.com/v1/messages', {
-        method:'POST', headers:{'Content-Type':'application/json','x-api-key':document.getElementById('byokInput').value.trim(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-        body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, system, messages:conv })
-      });
-    } else {
-      response = await fetch(`${PROXY_URL}/chat`, {
-        method:'POST', headers:{'Content-Type':'application/json','X-Session-ID':getSessionId()},
-        body:JSON.stringify({ system, messages:conv })
-      });
-    }
-    const data = await response.json();
-    hideTyping(target);
-    if (data.content && data.content.length > 0) {
-      const reply = data.content.map(c => c.text||'').join('');
-      addMsg(target, reply, 'agent');
-      addBadges(target, badges);
-      conv.push({ role:'assistant', content:reply });
-      messageCount++; updateRate();
-    } else if (data.error) {
-      addSys(target, `Error: ${data.error.message}`);
-    }
-  } catch (err) {
-    hideTyping(target);
-    addSys(target, 'Connection error. Try again.');
-    console.error(err);
-  }
-
-  isLoading = false;
-  document.getElementById(target + 'Send').disabled = false;
-  input.focus();
-}
-
-// ═══════════════════════════════════════
-// ENTERPRISE CONTROLS
-// ═══════════════════════════════════════
-function toggleDemo() {
-  demoActive = !demoActive;
-  document.getElementById('statusDot').className = 'status-dot ' + (demoActive?'active':'paused');
-  document.getElementById('statusText').textContent = demoActive ? 'Demo Active' : 'Demo Paused';
-  document.getElementById('toggleBtn').textContent = demoActive ? 'Deactivate' : 'Reactivate';
-  document.getElementById('toggleBtn').className = 'demo-btn ' + (demoActive?'danger':'primary');
-  document.getElementById('entChat').classList.toggle('chat-disabled', !demoActive);
-  if (!demoActive) addSys('ent', 'Demo paused.');
-}
-function toggleBYOK() { document.getElementById('byokArea').classList.toggle('visible'); }
-function activateBYOK() { if (document.getElementById('byokInput').value.trim().startsWith('sk-ant-')) { apiMode='byok'; document.getElementById('byokArea').classList.remove('visible'); addSys('ent','BYOK active'); } }
-function updateRate() { document.getElementById('rateLimit').textContent = `${MAX_MSG-messageCount}/${MAX_MSG}`; }
-
-async function requestAccess() {
-  const email = document.getElementById('gateEmail').value.trim();
-  if (!email || !email.includes('@')) return;
-  try { await fetch(`${PROXY_URL}/lead`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email}) }); } catch(e) {}
-  document.getElementById('emailGate').innerHTML = '<div style="font-size:28px;color:var(--green)">&#10003;</div><h3 style="color:var(--green)">Access granted! Check your email.</h3>';
-}
-
-// Scenario selection
-document.querySelectorAll('.scenario-card').forEach(card => {
-  card.addEventListener('click', () => {
-    const sc = card.dataset.scenario;
-    document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('active'));
-    card.classList.add('active');
-    if (sc === 'custom') { document.getElementById('customArea').classList.add('visible'); return; }
-    document.getElementById('customArea').classList.remove('visible');
-    currentScenario = sc; convEnt = [];
-    document.getElementById('entAgentName').textContent = scenarios[sc].name;
-    loadWelcome('ent');
-  });
-});
-
-function applyCustom() {
-  const p = document.getElementById('customPrompt').value.trim(); if (!p) return;
-  scenarios.custom.system = p; currentScenario = 'custom'; convEnt = [];
-  document.getElementById('entAgentName').textContent = 'Custom Agent';
-  loadWelcome('ent');
-}
-
-function clearChat() { convEnt = []; loadWelcome('ent'); }
-
-function setLang(l) {
-  currentLang = l;
-  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent === l.toUpperCase()));
-  if (currentView !== 'enterprise') setupIndustry(currentIndustry);
-  else loadWelcome('ent');
-}
-
-// Auto-resize inputs
-['entInput','indInput'].forEach(id => {
-  document.getElementById(id).addEventListener('input', function() { this.style.height='auto'; this.style.height=Math.min(this.scrollHeight,80)+'px'; });
-});
-
-// ═══════════════════════════════════════
-// MODEL TABLE
-// ═══════════════════════════════════════
-const models = [
-  {n:'Haiku 4.5',p:'Anthropic',pc:'ant',i:'$0.01',o:'$0.05',c:'200K',q:3,t:'budget',b:'High-volume, low-latency',pr:'Cheapest quality',cn:'Limited reasoning'},
-  {n:'Sonnet 4.6',p:'Anthropic',pc:'ant',i:'$0.03',o:'$0.15',c:'1M',q:4,t:'balanced',b:'Production agents',pr:'Best price/quality',cn:'Slower than Haiku'},
-  {n:'Opus 4.6',p:'Anthropic',pc:'ant',i:'$0.05',o:'$0.25',c:'1M',q:5,t:'premium',b:'Complex reasoning',pr:'Top intelligence',cn:'Higher cost'},
-  {n:'GPT-4o-mini',p:'OpenAI',pc:'oai',i:'$0.15',o:'$0.60',c:'128K',q:3,t:'budget',b:'Simple chatbots',pr:'Good ecosystem',cn:'Lower quality'},
-  {n:'GPT-4.1',p:'OpenAI',pc:'oai',i:'$2.00',o:'$8.00',c:'1M',q:5,t:'premium',b:'Enterprise',pr:'1M context',cn:'Expensive output'},
-  {n:'o3',p:'OpenAI',pc:'oai',i:'$2.00',o:'$8.00',c:'200K',q:5,t:'premium',b:'Advanced reasoning',pr:'Strong math',cn:'Slow'},
-  {n:'Gemini 2.5 Flash',p:'Google',pc:'goo',i:'$0.30',o:'$2.50',c:'1M',q:3,t:'budget',b:'Fast multimodal',pr:'Fast, free tier',cn:'Inconsistent'},
-  {n:'Gemini 2.5 Pro',p:'Google',pc:'goo',i:'$1.25',o:'$10.00',c:'1M',q:4,t:'premium',b:'Multimodal',pr:'Strong vision',cn:'Expensive output'},
-  {n:'Llama 4 Scout',p:'Meta',pc:'met',i:'$0.11',o:'$0.34',c:'10M',q:3,t:'budget',b:'Self-hosted',pr:'Open source, 10M',cn:'Own infra'},
-  {n:'Llama 4 Maverick',p:'Meta',pc:'met',i:'$0.50',o:'$0.77',c:'128K',q:4,t:'balanced',b:'Self-hosted prod',pr:'Open, strong',cn:'Infra cost'},
-  {n:'DeepSeek V4',p:'DeepSeek',pc:'ds',i:'$0.30',o:'$0.50',c:'128K',q:4,t:'balanced',b:'Cost-efficient',pr:'Excellent value',cn:'Data sovereignty'},
-  {n:'Mistral Large 3',p:'Mistral',pc:'mis',i:'$2.00',o:'$6.00',c:'128K',q:4,t:'premium',b:'EU compliance',pr:'EU residency',cn:'Smaller ecosystem'},
-];
-const pcMap = {ant:'p-ant',oai:'p-oai',goo:'p-goo',met:'p-met',ds:'p-ds',mis:'p-mis'};
-
-function renderM(f) {
-  const tb = document.getElementById('mBody'); tb.innerHTML = '';
-  (f==='all'?models:models.filter(m=>m.t===f)).forEach(m => {
-    const dots = Array.from({length:5},(_,i)=>`<div class="qd ${i<m.q?(m.q>=5?'fg':m.q>=4?'f':'fa'):''}"></div>`).join('');
-    const cl = parseInt(m.c)>=1000?'lg':'';
-    const ic = parseFloat(m.i.replace('$',''))<=.15?'ph':parseFloat(m.i.replace('$',''))>=2?'pe':'';
-    const oc = parseFloat(m.o.replace('$',''))<=.6?'ph':parseFloat(m.o.replace('$',''))>=6?'pe':'';
-    tb.innerHTML += `<tr><td><div class="mn">${esc(m.n)}<span class="mp ${pcMap[m.pc]}">${m.p}</span></div></td><td class="pc ${ic}">${m.i}</td><td class="pc ${oc}">${m.o}</td><td><span class="cb ${cl}">${m.c}</span></td><td><div class="qbar">${dots}</div></td><td class="pcc">${esc(m.b)}</td><td class="pcc"><span class="pt">+</span> ${esc(m.pr)}<br><span class="ct">&minus;</span> ${esc(m.cn)}</td></tr>`;
-  });
-}
-function filterM(f,btn) { document.querySelectorAll('.mf-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderM(f); }
-
-// Init
-renderM('all'); updateRate(); loadWelcome('ent');
+// ═══ MODEL TABLE ═══
+const ML=[{n:'Haiku 4.5',p:'Anthropic',c:'pa',i:'$0.01',o:'$0.05',x:'200K',q:3,t:'budget',b:'High-volume',pr:'Cheapest',cn:'Limited reasoning'},{n:'Sonnet 4.6',p:'Anthropic',c:'pa',i:'$0.03',o:'$0.15',x:'1M',q:4,t:'balanced',b:'Production agents',pr:'Best value',cn:'Slower'},{n:'Opus 4.6',p:'Anthropic',c:'pa',i:'$0.05',o:'$0.25',x:'1M',q:5,t:'premium',b:'Complex reasoning',pr:'Top intelligence',cn:'Higher cost'},{n:'GPT-4o-mini',p:'OpenAI',c:'po',i:'$0.15',o:'$0.60',x:'128K',q:3,t:'budget',b:'Chatbots',pr:'Good ecosystem',cn:'Lower quality'},{n:'GPT-4.1',p:'OpenAI',c:'po',i:'$2.00',o:'$8.00',x:'1M',q:5,t:'premium',b:'Enterprise',pr:'1M context',cn:'Expensive'},{n:'o3',p:'OpenAI',c:'po',i:'$2.00',o:'$8.00',x:'200K',q:5,t:'premium',b:'Reasoning',pr:'Strong math',cn:'Slow'},{n:'Gemini 2.5 Flash',p:'Google',c:'pg',i:'$0.30',o:'$2.50',x:'1M',q:3,t:'budget',b:'Multimodal',pr:'Fast',cn:'Inconsistent'},{n:'Gemini 2.5 Pro',p:'Google',c:'pg',i:'$1.25',o:'$10.00',x:'1M',q:4,t:'premium',b:'Vision',pr:'Strong vision',cn:'Expensive'},{n:'Llama 4 Scout',p:'Meta',c:'pm',i:'$0.11',o:'$0.34',x:'10M',q:3,t:'budget',b:'Self-hosted',pr:'Open, 10M ctx',cn:'Own infra'},{n:'Llama 4 Maverick',p:'Meta',c:'pm',i:'$0.50',o:'$0.77',x:'128K',q:4,t:'balanced',b:'Production',pr:'Open, strong',cn:'Infra cost'},{n:'DeepSeek V4',p:'DeepSeek',c:'pd',i:'$0.30',o:'$0.50',x:'128K',q:4,t:'balanced',b:'Coding',pr:'Excellent value',cn:'Data risk'},{n:'Mistral Large 3',p:'Mistral',c:'pmi',i:'$2.00',o:'$6.00',x:'128K',q:4,t:'premium',b:'EU compliance',pr:'EU residency',cn:'Smaller'}];
+function rM(f){const tb=document.getElementById('mB');tb.innerHTML='';(f==='all'?ML:ML.filter(m=>m.t===f)).forEach(m=>{const ds=Array.from({length:5},(_,i)=>`<div class="qd2 ${i<m.q?(m.q>=5?'fg':m.q>=4?'f':'fa'):''}"></div>`).join('');const cl=parseInt(m.x)>=1000?'lg':'';const ic=parseFloat(m.i.replace('$',''))<=.15?'prh':parseFloat(m.i.replace('$',''))>=2?'pre':'';const oc=parseFloat(m.o.replace('$',''))<=.6?'prh':parseFloat(m.o.replace('$',''))>=6?'pre':'';tb.innerHTML+=`<tr><td><div class="mn2">${esc(m.n)}<span class="mp2 ${m.c}">${m.p}</span></div></td><td class="prc ${ic}">${m.i}</td><td class="prc ${oc}">${m.o}</td><td><span class="cb2 ${cl}">${m.x}</span></td><td><div class="qb">${ds}</div></td><td class="pcc2">${esc(m.b)}</td><td class="pcc2"><span class="prt">+</span> ${esc(m.pr)}<br><span class="cnt">-</span> ${esc(m.cn)}</td></tr>`;});}
+function fM(f,b){document.querySelectorAll('.mfb').forEach(x=>x.classList.remove('act'));b.classList.add('act');rM(f);}
+rM('all');updR();wel('ent');
 </script>
 </body>
 </html>
